@@ -13,10 +13,20 @@
 #   limitations under the License.
 
 #HERE WE HAVE OUR DEFAULT MODULES
+defaultmods = ['modules.image']
 import os
 #import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
 import discord,aiohttp,asyncio,logging, sys, traceback, atexit
 from discord.ext import commands
+class Bot(commands.Bot):
+    #handle close
+    async def async_clean(self):
+        print(f"{RED}Logging off!{RESET}")
+        logging.info("Bot Logoff Event")
+
+    async def close(self):
+        await self.async_clean()
+        await super().close()
 try:
     import colorama
     from colorama import Fore,Back,Style
@@ -71,30 +81,23 @@ def get_token(isdev=0):
             myTokenToReturn = line
         #return the token we got from the file
         return myTokenToReturn
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f'{RED}Logged on as {self.user}{RESET}!')
-    
-    async def on_message(self, message):
-        print(f'Message from {message.author}: {message.content}')
 
-    #handle close
-    async def async_clean(self):
-        print(f"{RED}Logging off!{RESET}")
-        logging.info("Bot Logoff Event")
-
-    async def close(self):
-        await self.async_clean()
-        await super().close()
-
-token = get_token(IS_DEVELOPMENT_VERSION)
 intents = discord.Intents.default()
 intents.message_content = True
+bot = commands.Bot(command_prefix="/",intents=intents)
 
-client = MyClient(intents=intents)
+@bot.event
+async def on_ready():
+    print(f'{RED}Logged on as {bot.user}{RESET}!')
+
+@bot.hybrid_command(name='test')
+async def test(ctx):
+    print("A")
+    await ctx.send("Test")
+token = get_token(IS_DEVELOPMENT_VERSION)
 print(token)
 logging.info("Bot Login Event")
 try:
-    client.run(token)
+    bot.run(token)
 except Exception as e:
     HandleException(sys.exc_info[0],sys.exc_info[1],sys.exc_info[2])
