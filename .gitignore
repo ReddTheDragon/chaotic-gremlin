@@ -5,6 +5,7 @@
 *.swf
 *.air
 *.ipa
+*.log
 *.apk
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`

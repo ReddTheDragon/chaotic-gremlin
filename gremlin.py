@@ -11,9 +11,11 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+
+#HERE WE HAVE OUR DEFAULT MODULES
 import os
-#import discord.py, aiohttp (async http, basically), and asyncio (async functionality)
-import discord,aiohttp,asyncio
+#import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
+import discord,aiohttp,asyncio,logging, sys, traceback, atexit
 from discord.ext import commands
 try:
     import colorama
@@ -32,9 +34,26 @@ except:
     WHITE = ""
 ###VARIABLE DECLARATIONS###
 #is this a development version?
-IS_DEVELOPMENT_VERSION = 0
+IS_DEVELOPMENT_VERSION = 1
 #declare the version
 VERS = "0.1 beta"
+###END VARIABLE DECLARATIONS###
+
+#setup logging
+#setup exception logging
+FORMAT = 'T: %(asctime)s | FILE: %(filename)s | FUNC: %(funcName)s | LINE: %(lineno)d | %(name)s, %(levelname)s: %(message)s'
+logging.basicConfig(filename='chaoticgremlin.log',filemode="w", level=logging.INFO,format=FORMAT)
+#setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
+def HandleException(exctype, value, tb):
+    tbf1 = traceback.format_tb(tb)
+    tbf2 = ""
+    for line in tbf1:
+        tbf2 = tbf2 + line
+    logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tbf2}")
+    traceback.print_tb(tb)
+#set the python exception handler to use function 'HandleException'
+sys.excepthook = HandleException
+
 
 #function to load tokens
 def get_token(isdev=0):
@@ -48,16 +67,34 @@ def get_token(isdev=0):
     #IS DEVELOPMENT
     elif isdev==1:
         myFile = open(os.path.join('.','tokens','dev.txt'))
+        for line in myFile:
+            myTokenToReturn = line
+        #return the token we got from the file
+        return myTokenToReturn
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f'{RED} Logged on as {self.user}{RESET}!')
+        print(f'{RED}Logged on as {self.user}{RESET}!')
     
     async def on_message(self, message):
         print(f'Message from {message.author}: {message.content}')
 
-get_token()
+    #handle close
+    async def async_clean(self):
+        print(f"{RED}Logging off!{RESET}")
+        logging.info("Bot Logoff Event")
+
+    async def close(self):
+        await self.async_clean()
+        await super().close()
+
+token = get_token(IS_DEVELOPMENT_VERSION)
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = MyClient(intents=intents)
-#client.run(token)
+print(token)
+logging.info("Bot Login Event")
+try:
+    client.run(token)
+except Exception as e:
+    HandleException(sys.exc_info[0],sys.exc_info[1],sys.exc_info[2])
