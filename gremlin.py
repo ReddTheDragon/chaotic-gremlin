@@ -163,7 +163,7 @@ async def reloadCogs(ctx):
     em = discord.Embed(title="Cog Reload Complete",color=discord.Color.yellow())
     em.set_footer(text=bot.user.name + " version " + str(VERS))
     em.add_field(name="Cogs Successfully Reloaded",value=str(cogSuccess) + " of " + str(cogTotal))
-    do_embed(ctx,em)
+    await do_embed(ctx,em)
 
 async def do_embed(ctx,embd):
     if isinstance(ctx,discord.Interaction):
