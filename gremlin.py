@@ -133,6 +133,7 @@ async def coglist(ctx):
         em.add_field(name="Cog",value=str(k))
     await do_embed(ctx,em)
 
+#this reloads all loaded cogs in initialmods
 @bot.command(name="reloadcogs")
 @commands.check(owner.isowner)
 async def reloadCogs(ctx):
@@ -145,10 +146,11 @@ async def reloadCogs(ctx):
         print(f"{YELLOW}Unloading extension {cog}...{RESET}")
         logging.warning(f"Unloading extension {cog}...")
         await bot.unload_extension(cog)
-        print(f"{YELLOW}{cog} {WHITE}[{YELLOW}UNLOADED{WHITE}]{RESET}")
+        print(f"{YELLOW}{cog} {WHITE}[{RED}UNLOADED{WHITE}]{RESET}")
     cogTotal = 0
     cogSuccess = 0
     await asyncio.sleep(3)
+    #load the cogs
     for cog in defaultmods:
         cogTotal = cogTotal + 1
         try:
