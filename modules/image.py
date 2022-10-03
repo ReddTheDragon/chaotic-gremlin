@@ -203,7 +203,8 @@ class imageDefs(commands.Cog):
             myimg.modulate(100,150,90)
             myimg.normalize()
             myimg.contrast(50)
-            myimg.addNoise(noisetype)
+            for i in range(5):
+                myimg.addNoise(noisetype)
             myGeo = pgmagick.Geometry("109%x91%")
             myimg.resize(myGeo)
             myGeo = pgmagick.Geometry("90%x110%")
