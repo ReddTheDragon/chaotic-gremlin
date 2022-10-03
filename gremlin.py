@@ -96,6 +96,7 @@ async def on_ready():
     for ext in defaultmods:
         try:
             await bot.load_extension(ext)
+            logging.info(f"Extension {ext} loaded...")
             print(f"{YELLOW}{ext} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
         except Exception as e:
             print(f'{RED}Failed to load extension \"{ext}\".{RESET}', file=sys.stderr)
@@ -132,6 +133,37 @@ async def coglist(ctx):
         em.add_field(name="Cog",value=str(k))
     await do_embed(ctx,em)
 
+@bot.command(name="reloadcogs")
+@commands.check(owner.isowner)
+async def reloadCogs(ctx):
+    em = discord.Embed(title="Reloading Cogs...",color=discord.Color.yellow())
+    logging.warning("Bot Owner Triggered Reload Of Extensions")
+    print(f"{YELLOW}Bot owner triggered reload of extensions...{RESET}")
+    em.set_footer(text=bot.user.name + " version " + str(VERS))
+    await do_embed(ctx,em)
+    for cog in defaultmods:
+        print(f"{YELLOW}Unloading extension {cog}...{RESET}")
+        logging.warn(f"Unloading extension {cog}...")
+        await bot.unload_extension(cog)
+        print(f"{YELLOW}{cog} {WHITE}[{YELLOW}UNLOADED{WHITE}]{RESET}")
+    cogTotal = 0
+    cogSuccess = 0
+    for cog in defaultmods:
+        cogTotal = cogTotal + 1
+        try:
+            print(f"{YELLOW}Loading extension {cog}...{RESET}")
+            logging.warn(f"Loading extension {cog}...")
+            await bot.unload_extension(cog)
+            print(f"{YELLOW}{cog} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
+            logging.info(f"Extension {cog} loaded.")
+            cogSuccess = cogSuccess + 1
+        except Exception as e:
+            print(f"{YELLOW}{cog} {WHITE}[{RED}ERROR{WHITE}]{RESET}")
+            HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+    em = discord.Embed(title="Cog Reload Complete",color=discord.Color.yellow())
+    em.set_footer(text=bot.user.name + " version " + str(VERS))
+    em.add_field(name="Cogs Successfully Reloaded",value=str(cogSuccess) + " of " + str(cogTotal))
+    do_embed(ctx,em)
 
 async def do_embed(ctx,embd):
     if isinstance(ctx,discord.Interaction):
