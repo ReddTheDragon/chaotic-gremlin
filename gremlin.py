@@ -46,7 +46,7 @@ except:
     WHITE = ""
 ###VARIABLE DECLARATIONS###
 #is this a development version?
-IS_DEVELOPMENT_VERSION = 1
+IS_DEVELOPMENT_VERSION = 0
 #declare the version
 VERS = "0.3 beta"
 ###END VARIABLE DECLARATIONS###
