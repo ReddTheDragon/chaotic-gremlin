@@ -183,4 +183,4 @@ logging.info("Bot Login Event")
 try:
     bot.run(token)
 except Exception as e:
-    HandleException(sys.exc_info[0],sys.exc_info[1],sys.exc_info[2])
+    HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
