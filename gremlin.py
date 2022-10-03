@@ -46,7 +46,7 @@ except:
     WHITE = ""
 ###VARIABLE DECLARATIONS###
 #is this a development version?
-IS_DEVELOPMENT_VERSION = 1
+IS_DEVELOPMENT_VERSION = 0
 #declare the version
 VERS = "0.3 beta"
 ###END VARIABLE DECLARATIONS###
@@ -179,9 +179,8 @@ async def on_command_error(ctx,error):
         tb = sys.exc_info()[2]
         logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tb}")
 token = get_token(IS_DEVELOPMENT_VERSION)
-print(token)
 logging.info("Bot Login Event")
 try:
     bot.run(token)
 except Exception as e:
-    HandleException(sys.exc_info[0],sys.exc_info[1],sys.exc_info[2])
+    HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
