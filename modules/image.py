@@ -11,7 +11,9 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import discord
+
+#THIS IS LEGACY CODE I DON'T UNDERSTAND
+import discord,math
 from discord.ext import commands
 import asyncio,random
 import aiohttp
@@ -19,7 +21,7 @@ from io import BytesIO
 import pgmagick,async_timeout
 
 aiohttp.Timeout = async_timeout.timeout
-class imageDefs:
+class imageDefs(commands.Cog):
     def apiget(self,url,endpoint):
         try:
             import requests
@@ -28,16 +30,15 @@ class imageDefs:
         except:
             return False
             traceback.print_exc()
-    def __init__(self,bot):
+    def ___init___(self,bot):
         self.bot = bot
     
-    @commands.command(name="implode")
-    @commands.cooldown(rate=2,per=120,type=commands.BucketType.guild)
-    async def doimplosion(self,ctx):
+    @discord.app_commands.command(name="implode",description="Implode an image, or explode it!")
+    async def doimplosion(self,ctx,size: int):
         """IMPLODE"""
         doexit = False
         async with ctx.channel.typing():
-            messages = await ctx.channel.history().flatten()
+            messages = [message async for message in ctx.channel.history(limit=100)]
             myLastMessage = discord.utils.find(lambda m: m.attachments != None and m.guild == ctx.guild and m.attachments != [], messages)
             if myLastMessage is None:
                 await ctx.send("**Error. Could not find an image!**")
@@ -72,16 +73,18 @@ class imageDefs:
                 doexit = True
             blob = pgmagick.Blob(imageBinary)
             myimg = pgmagick.Image(blob)
-            myimg.implode(.3)
+            size = round(size / 10,2)
+            if size >= 1:
+                size = 1
+            myimg.implode(size)
             myfi = pgmagick.Blob()
             myimg.write(myfi)
-            print(myfi.data)
-            myDiscordFile = discord.File(myfi.data,filename='result.png')
+            myImgTest = BytesIO(myfi.data)
+            myDiscordFile = discord.File(myImgTest,filename='result.png')
         if doexit is True:
             return False
-        await ctx.send(file=myDiscordFile)    
+        await ctx.response.send_message("I did it!",file=myDiscordFile)
     @commands.command(name="explode")
-    @commands.cooldown(rate=2,per=120,type=commands.BucketType.guild)
     async def doexplosion(self,ctx):
         """BOOM"""
         doexit = False
@@ -131,7 +134,6 @@ class imageDefs:
         await ctx.send(file=myDiscordFile)
         
     @commands.command(name="swirl")
-    @commands.cooldown(rate=2,per=120,type=commands.BucketType.guild)
     async def doswirl(self,ctx):
         """do a curl, do a swirl"""
         doexit = False
@@ -181,5 +183,6 @@ class imageDefs:
         await ctx.send(file=myDiscordFile)
                             
                 
-def setup(bot):
-    bot.add_cog(imageDefs(bot))
+async def setup(bot):
+    bot = bot
+    await bot.add_cog(imageDefs(bot))

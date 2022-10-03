@@ -92,6 +92,13 @@ bot = Bot(command_prefix="0",intents=intents)
 async def on_ready():
     print(f'{RED}Logged on as {bot.user}{RESET}!')
     #now load extensions
+    for ext in defaultmods:
+        try:
+            await bot.load_extension(ext)
+            print(f"{YELLOW}{ext} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
+        except Exception as e:
+            print(f'{RED}Failed to load extension \"{ext}\".{RESET}', file=sys.stderr)
+            HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
 
 @bot.event
 async def startup():
@@ -110,6 +117,8 @@ async def forcetree(ctx):
     await bot.tree.sync()
     print("B")
     await ctx.send("Bot commandtree synced")
+
+
 token = get_token(IS_DEVELOPMENT_VERSION)
 print(token)
 logging.info("Bot Login Event")
