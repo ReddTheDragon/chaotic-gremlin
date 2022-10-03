@@ -20,6 +20,7 @@ import os
 import discord,aiohttp,asyncio,logging, sys, traceback, atexit, time
 from discord.ext import commands
 from discord.app_commands import CommandTree
+import checks.owner as owner
 class Bot(commands.Bot):
     #handle close
     async def async_clean(self):
@@ -123,12 +124,14 @@ async def do_message(ctx,message):
     else:
         await ctx.send(message)
 @bot.command(name="listcogs")
+@commands.check(owner.isowner)
 async def coglist(ctx):
     em = discord.Embed(title="Loaded Cogs",color=discord.Color.red())
     em.set_footer(text=bot.user.name + " version " + str(VERS))
     for k in bot.cogs:
         em.add_field(name="Cog",value=str(k))
     await do_embed(ctx,em)
+
 
 async def do_embed(ctx,embd):
     if isinstance(ctx,discord.Interaction):
