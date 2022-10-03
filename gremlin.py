@@ -48,7 +48,7 @@ except:
 #is this a development version?
 IS_DEVELOPMENT_VERSION = 1
 #declare the version
-VERS = "0.1 beta"
+VERS = "0.3 beta"
 ###END VARIABLE DECLARATIONS###
 
 #setup logging
@@ -117,8 +117,67 @@ async def forcetree(ctx):
     await bot.tree.sync()
     print("B")
     await ctx.send("Bot commandtree synced")
+async def do_message(ctx,message):
+    if isinstance(ctx,discord.Interaction):
+        await ctx.response.send_message(message)
+    else:
+        await ctx.send(message)
 
+async def do_embed(ctx,embd):
+    if isinstance(ctx,discord.Interaction):
+        await ctx.response.send_message(embed=embd)
+    else:
+        await ctx.send(embed=embd)
 
+#THIS IS BLACK MAGIC, DO NOT TOUCH IT
+@bot.event
+async def on_command_error(ctx,error):
+    print(error)
+    doLog = True
+    if type(error) is commands.MissingRequiredArgument:
+        doLog = False
+        print(ctx.author.name, " failed to execute a command due to a missing argument. (",ctx.command,")",sep="",file=sys.stderr)
+        await do_message(ctx,"You're missing a required argument.")
+        doLog = True
+    elif type(error) is discord.errors.Forbidden:
+        logging.error("I do not have access to channel ID {0}".format(ctx.channel.id))
+        print(f"{RED}403 Forbidden error for channel {WHITE}" + str(ctx.channel.id) + f"{RED}!{RESET}")
+    elif type(error) is commands.BadArgument:
+        print(ctx.author.name, " failed to execute a command due to a bad argument. (",ctx.command,")",sep="",file=sys.stderr)
+        await do_message(ctx,"Bad argument.\n{:s}".format(str(error)))
+        doLog = True
+    elif type(error) is commands.CommandNotFound:
+        async with ctx.channel.typing():
+            e = discord.Embed(title="Command not found.",color=discord.Color.red())
+            e.set_footer(text=bot.user.name + " version " + str(VERS))
+            e.add_field(name="Error Type",value=str(type(error).__name__))
+        await do_embed(ctx,e)
+    elif type(error) is commands.CommandOnCooldown:
+        e = discord.Embed(title="Command Cooldown",color=discord.Color.red())
+        e.set_footer(text=bot.user.name + " version " + str(VERS))
+        e.add_field(name="Error",value=str(error))
+        await do_embed(ctx,e)
+    elif type(error) is discord.app_commands.errors.CommandInvokeError:
+        print(error,file=sys.stderr)
+        e = discord.Embed(title="Your command cannot be completed as dialed.",color=discord.Color.red())
+        e.set_footer(text=bot.user.name + " version " + str(VERS))
+        e.add_field(name="Error Type",value=str(type(error).__name__))
+        e.add_field(name="Error",value=str(error))
+        await do_embed(ctx,e)
+        doLog = False
+    else:
+        print(error,file=sys.stderr)
+        e = discord.Embed(title="Your command cannot be completed as dialed.",color=discord.Color.red())
+        e.set_footer(text=bot.user.name + " version " + str(VERS))
+        e.add_field(name="Error Type",value=str(type(error).__name__))
+        e.add_field(name="Error",value=str(error))
+        await do_embed(ctx,e)
+        doLog = False
+    if doLog != False:
+        exctype = str(type(error))
+        value = str(error)
+        tb = sys.exc_info()[2]
+        logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tb}")
 token = get_token(IS_DEVELOPMENT_VERSION)
 print(token)
 logging.info("Bot Login Event")

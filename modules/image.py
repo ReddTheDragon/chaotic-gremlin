@@ -16,7 +16,7 @@
 import discord,math
 from discord.ext import commands
 import asyncio,random
-import aiohttp
+import aiohttp,logging
 from io import BytesIO
 import pgmagick,async_timeout
 
@@ -33,24 +33,24 @@ class imageDefs(commands.Cog):
     def ___init___(self,bot):
         self.bot = bot
     
-    @discord.app_commands.command(name="implode",description="Implode an image, or explode it!")
-    async def doimplosion(self,ctx,size: int):
+    @discord.app_commands.command(name="plode",description="Implode an image, or explode it!")
+    async def doimplosion(self,ctx,size: float):
         """IMPLODE"""
         doexit = False
         async with ctx.channel.typing():
             messages = [message async for message in ctx.channel.history(limit=100)]
             myLastMessage = discord.utils.find(lambda m: m.attachments != None and m.guild == ctx.guild and m.attachments != [], messages)
             if myLastMessage is None:
-                await ctx.send("**Error. Could not find an image!**")
+                await ctx.response.send_message("**Error. Could not find an image!**")
                 return False
             #check if image
             myfiname = myLastMessage.attachments[0].filename.split(".")
             acceptableFiles = ["png","jpg","jpeg"]
             try:
                 if not myfiname[len(myfiname) - 1] in acceptableFiles:
-                    await ctx.send("**Error! Not a valid image.**")
+                    await ctx.response.send_message("**Error! Not a valid image.**")
             except:
-                await ctx.send("**Error! Not a valid image.**")
+                await ctx.response.send_message("**Error! Not a valid image.**")
                 doexit = True
             try:
                 url = myLastMessage.attachments[0].url
@@ -69,11 +69,10 @@ class imageDefs(commands.Cog):
                             imageBinary = b.read()
                     
             except:
-                await ctx.send("**Error. Could not fetch latest image!**")
+                await ctx.response.send_message("**Error. Could not fetch latest image!**")
                 doexit = True
             blob = pgmagick.Blob(imageBinary)
             myimg = pgmagick.Image(blob)
-            size = round(size / 10,2)
             if size >= 1:
                 size = 1
             myimg.implode(size)
@@ -83,74 +82,30 @@ class imageDefs(commands.Cog):
             myDiscordFile = discord.File(myImgTest,filename='result.png')
         if doexit is True:
             return False
-        await ctx.response.send_message("I did it!",file=myDiscordFile)
-    @commands.command(name="explode")
-    async def doexplosion(self,ctx):
-        """BOOM"""
-        doexit = False
-        async with ctx.channel.typing():
-            messages = await ctx.channel.history().flatten()
-            myLastMessage = discord.utils.find(lambda m: m.attachments != None and m.guild == ctx.guild and m.attachments != [], messages)
-            if myLastMessage is None:
-                await ctx.send("**Error. Could not find an image!**")
-                return False
-            #check if image
-            myfiname = myLastMessage.attachments[0].filename.split(".")
-            acceptableFiles = ["png","jpg","jpeg"]
-            try:
-                if not myfiname[len(myfiname) - 1] in acceptableFiles:
-                    await ctx.send("**Error! Not a valid image.**")
-            except:
-                await ctx.send("**Error! Not a valid image.**")
-                doexit = True
-            try:
-                url = myLastMessage.attachments[0].url
-            except:
-                import traceback
-                traceback.print_exc()
-                del traceback
-            try:
-                imageBinary = ""
-                async with aiohttp.ClientSession() as session:
-                    with aiohttp.Timeout(5):
-                        async with session.get(url) as resp:
-                            data = await resp.read()
-                            b = BytesIO(data)
-                            b.seek(0)
-                            imageBinary = b.read()
-                    
-            except:
-                await ctx.send("**Error. Could not fetch latest image!**")
-                doexit = True
-            blob = pgmagick.Blob(imageBinary)
-            myimg = pgmagick.Image(blob)
-            myimg.implode(-2)
-            myfi = pgmagick.Blob()
-            myimg.write(myfi)
-            print(myfi.data)
-            myDiscordFile = discord.File(myfi.data,filename='result.png')
-        if doexit is True:
-            return False
-        await ctx.send(file=myDiscordFile)
+        logging.info("User {0}#{1} (<@{2}>) ploded image in guild {3}".format(ctx.user.name,ctx.user.discriminator,ctx.user.id,ctx.guild.id))
+        await ctx.response.send_message("I did it! Ploded image with size of {0}".format(size),file=myDiscordFile)
         
-    @commands.command(name="swirl")
-    async def doswirl(self,ctx):
+    @discord.app_commands.command(name="swirl",description="Give an image a SWIIIIIIRL")
+    async def doswirl(self,ctx,factor:int = 180):
         """do a curl, do a swirl"""
+        if factor == 0:
+            await ctx.response.send_message("Can't do a swirl with a factor of 0 :(")
+            return
         doexit = False
         async with ctx.channel.typing():
-            messages = await ctx.channel.history().flatten()
+            messages = [message async for message in ctx.channel.history(limit=100)]
             myLastMessage = discord.utils.find(lambda m: m.attachments != None and m.guild == ctx.guild and m.attachments != [], messages)
             if myLastMessage is None:
-                await ctx.send("**Error. Could not find an image!**")
+                await ctx.response.send_message("**Error. Could not find an image!**")
                 return False
             #check if image
             myfiname = myLastMessage.attachments[0].filename.split(".")
             acceptableFiles = ["png","jpg","jpeg"]
             try:
                 if not myfiname[len(myfiname) - 1] in acceptableFiles:
-                    await ctx.send("**Error! Not a valid image.**")
+                    await ctx.response.send_message("**Error! Not a valid image.**")
             except:
-                await ctx.send("**Error! Not a valid image.**")
+                await ctx.response.send_message("**Error! Not a valid image.**")
                 doexit = True
             try:
                 url = myLastMessage.attachments[0].url
@@ -169,18 +124,19 @@ class imageDefs(commands.Cog):
                             imageBinary = b.read()
                     
             except:
-                await ctx.send("**Error. Could not fetch latest image!**")
+                await ctx.response.send_message("**Error. Could not fetch latest image!**")
                 doexit = True
             blob = pgmagick.Blob(imageBinary)
             myimg = pgmagick.Image(blob)
-            myimg.swirl(180)
+            myimg.swirl(factor)
             myfi = pgmagick.Blob()
             myimg.write(myfi)
-            print(myfi.data)
-            myDiscordFile = discord.File(myfi.data,filename='result.png')
+            mydata = BytesIO(myfi.data)
+            myDiscordFile = discord.File(mydata,filename='result.png')
         if doexit is True:
             return False
-        await ctx.send(file=myDiscordFile)
+        logging.info("User {0}#{1} (<@{2}>) swirled image in guild {3}".format(ctx.user.name,ctx.user.discriminator,ctx.user.id,ctx.guild.id))
+        await ctx.response.send_message("I did it! Swirled image by factor of {0}".format(factor),file=myDiscordFile)
                             
                 
 async def setup(bot):
