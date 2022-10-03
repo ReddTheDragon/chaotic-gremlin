@@ -122,6 +122,13 @@ async def do_message(ctx,message):
         await ctx.response.send_message(message)
     else:
         await ctx.send(message)
+@bot.command(name="listcogs")
+async def coglist(ctx):
+    em = discord.Embed(title="Loaded Cogs",color=discord.Color.red())
+    em.set_footer(text=bot.user.name + " version " + str(VERS))
+    for k in bot.cogs:
+        em.add_field(name="Cog",value=str(k))
+    await do_embed(ctx,em)
 
 async def do_embed(ctx,embd):
     if isinstance(ctx,discord.Interaction):
