@@ -1,4 +1,5 @@
-#Copyright 2022 Thomas D. Streiff
+#!/usr/bin/python
+# #Copyright 2022 Thomas D. Streiff
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,8 +17,9 @@
 defaultmods = ['modules.image']
 import os
 #import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
-import discord,aiohttp,asyncio,logging, sys, traceback, atexit
+import discord,aiohttp,asyncio,logging, sys, traceback, atexit, time
 from discord.ext import commands
+from discord.app_commands import CommandTree
 class Bot(commands.Bot):
     #handle close
     async def async_clean(self):
@@ -84,16 +86,30 @@ def get_token(isdev=0):
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="/",intents=intents)
+bot = Bot(command_prefix="0",intents=intents)
 
 @bot.event
 async def on_ready():
     print(f'{RED}Logged on as {bot.user}{RESET}!')
+    #now load extensions
 
-@bot.hybrid_command(name='test')
+@bot.event
+async def startup():
+    await bot.tree.sync()
+    
+
+@bot.tree.command(name='ping',description="A")
 async def test(ctx):
     print("A")
-    await ctx.send("Test")
+    myt = time.ctime(time.time())
+    mystr = "pong at {time}".format(time=myt)
+    await ctx.response.send_message(mystr)
+
+@bot.command(name="forcetree")
+async def forcetree(ctx):
+    await bot.tree.sync()
+    print("B")
+    await ctx.send("Bot commandtree synced")
 token = get_token(IS_DEVELOPMENT_VERSION)
 print(token)
 logging.info("Bot Login Event")
