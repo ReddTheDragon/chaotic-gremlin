@@ -179,7 +179,6 @@ async def on_command_error(ctx,error):
         tb = sys.exc_info()[2]
         logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tb}")
 token = get_token(IS_DEVELOPMENT_VERSION)
-print(token)
 logging.info("Bot Login Event")
 try:
     bot.run(token)
