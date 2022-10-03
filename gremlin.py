@@ -143,17 +143,18 @@ async def reloadCogs(ctx):
     await do_embed(ctx,em)
     for cog in defaultmods:
         print(f"{YELLOW}Unloading extension {cog}...{RESET}")
-        logging.warn(f"Unloading extension {cog}...")
+        logging.warning(f"Unloading extension {cog}...")
         await bot.unload_extension(cog)
         print(f"{YELLOW}{cog} {WHITE}[{YELLOW}UNLOADED{WHITE}]{RESET}")
     cogTotal = 0
     cogSuccess = 0
+    await asyncio.sleep(3)
     for cog in defaultmods:
         cogTotal = cogTotal + 1
         try:
             print(f"{YELLOW}Loading extension {cog}...{RESET}")
-            logging.warn(f"Loading extension {cog}...")
-            await bot.unload_extension(cog)
+            logging.warning(f"Loading extension {cog}...")
+            await bot.load_extension(cog)
             print(f"{YELLOW}{cog} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
             logging.info(f"Extension {cog} loaded.")
             cogSuccess = cogSuccess + 1
