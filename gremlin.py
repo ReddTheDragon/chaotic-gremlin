@@ -15,6 +15,7 @@
 
 #HERE WE HAVE OUR DEFAULT MODULES
 defaultmods = ['modules.image']
+from imaplib import Commands
 import os
 #import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
 import discord,aiohttp,asyncio,logging, sys, traceback, atexit, time
@@ -133,6 +134,48 @@ async def coglist(ctx):
         em.add_field(name="Cog",value=str(k))
     await do_embed(ctx,em)
 
+@bot.command(name="loadcog")
+@commands.check(owner.isowner)
+async def loadcog(ctx,cogname: str = ""):
+    if cogname == "":
+        await do_message(ctx,"Cog name must not be blank.")
+        return
+    try:
+        if not cogname in defaultmods:
+            print(f"{YELLOW}Loading non-startup mod {cogname}{RESET}")
+            logging.warning("Loading non-startup modification " + str(cogname))
+        logging.warning(f"Loading extension {cogname}")
+        await bot.load_extension(cogname)
+        logging.warning(f"Loaded extension {cogname}")
+        await do_message(ctx,f"Loaded extension {cogname}")
+        print(f"{YELLOW}{cogname} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
+    except:
+        print(f"{RED}Could not load extension{RESET}")
+        logging.error(f"Could not load extension {cogname}")
+        await do_message(ctx,f"Could not load extension {cogname}")
+        HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+    
+@bot.command(name="unloadcog")
+@commands.check(owner.isowner)
+async def unloadcog(ctx,cogname: str = ""):
+    if cogname == "":
+        await do_message(ctx,"Cog name must not be blank.")
+        return
+    try:
+        if not cogname in defaultmods:
+            print(f"{YELLOW}Unloading non-startup mod {cogname}{RESET}")
+            logging.warning("Unloading non-startup modification " + str(cogname))
+        logging.warning(f"Unloading extension {cogname}")
+        await bot.unload_extension(cogname)
+        logging.warning(f"Unloaded extension {cogname}")
+        print(f"{YELLOW}{cogname} {WHITE}[{RED}UNLOADED{WHITE}]{RESET}")
+        await do_message(ctx,f"Unloaded extension {cogname}")
+    except:
+        print(f"{RED}Could not unload extension{RESET}")
+        logging.error(f"Could not unload extension {cogname}")
+        await do_message(ctx,f"Could not unload extension {cogname}")
+        HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+
 #this reloads all loaded cogs in initialmods
 @bot.command(name="reloadcogs")
 @commands.check(owner.isowner)
@@ -210,6 +253,8 @@ async def on_command_error(ctx,error):
         e.add_field(name="Error",value=str(error))
         await do_embed(ctx,e)
         doLog = False
+    elif type(error) is commands.CheckFailure:
+        await do_message(ctx,"You lack the proper access for this command. If you believe this is in error, please contact the bot author.")
     else:
         print(error,file=sys.stderr)
         e = discord.Embed(title="Your command cannot be completed as dialed.",color=discord.Color.red())
