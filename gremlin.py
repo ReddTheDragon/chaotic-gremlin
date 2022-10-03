@@ -49,13 +49,13 @@ except:
 #is this a development version?
 IS_DEVELOPMENT_VERSION = 0
 #declare the version
-VERS = "0.3 beta"
+VERS = "0.5 beta"
 ###END VARIABLE DECLARATIONS###
 
 #setup logging
 #setup exception logging
 FORMAT = 'T: %(asctime)s | FILE: %(filename)s | FUNC: %(funcName)s | LINE: %(lineno)d | %(name)s, %(levelname)s: %(message)s'
-logging.basicConfig(filename='chaoticgremlin.log',filemode="w", level=logging.INFO,format=FORMAT)
+logging.basicConfig(filename='chaoticgremlin.log',filemode="a", level=logging.INFO,format=FORMAT)
 #setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
 def HandleException(exctype, value, tb):
     tbf1 = traceback.format_tb(tb)
