@@ -15,7 +15,7 @@
 #THIS IS LEGACY CODE I DON'T UNDERSTAND
 import discord,math
 from discord.ext import commands
-import asyncio,random
+import asyncio,random,traceback
 import aiohttp,logging
 from io import BytesIO
 import pgmagick,async_timeout
