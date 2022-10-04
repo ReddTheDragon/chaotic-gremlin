@@ -12,7 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-#THIS IS LEGACY CODE I DON'T UNDERSTAND
+# THIS IS LEGACY CODE I DON'T UNDERSTAND
 import discord,math
 from discord.ext import commands
 import asyncio,random,traceback
@@ -21,7 +21,7 @@ from io import BytesIO
 import pgmagick,async_timeout
 
 aiohttp.Timeout = async_timeout.timeout
-class imageDefs(commands.Cog):
+class imageModule(commands.Cog):
     def apiget(self,url,endpoint):
         try:
             import requests
@@ -43,7 +43,7 @@ class imageDefs(commands.Cog):
             if myLastMessage is None:
                 await ctx.response.send_message("**Error. Could not find an image!**")
                 return False
-            #check if image
+            # check if image
             myfiname = myLastMessage.attachments[0].filename.split(".")
             acceptableFiles = ["png","jpg","jpeg"]
             try:
@@ -98,7 +98,7 @@ class imageDefs(commands.Cog):
             if myLastMessage is None:
                 await ctx.response.send_message("**Error. Could not find an image!**")
                 return False
-            #check if image
+            # check if image
             myfiname = myLastMessage.attachments[0].filename.split(".")
             acceptableFiles = ["png","jpg","jpeg"]
             try:
@@ -147,7 +147,7 @@ class imageDefs(commands.Cog):
             if myLastMessage is None:
                 await ctx.response.send_message("**Error. Could not find an image!**")
                 return False
-            #check if image
+            # check if image
             myfiname = myLastMessage.attachments[0].filename.split(".")
             acceptableFiles = ["png","jpg","jpeg"]
             try:
@@ -219,4 +219,4 @@ class imageDefs(commands.Cog):
                 
 async def setup(bot):
     bot = bot
-    await bot.add_cog(imageDefs(bot))
+    await bot.add_cog(imageModule(bot))
