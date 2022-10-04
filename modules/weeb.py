@@ -32,13 +32,34 @@ class Anime(commands.Cog):
             print(token)
         self.client = Client(token)
         print(self.client)
+
+
     @discord.app_commands.command(name="search")
     async def doanimesearch(self,ctx,name: str):
-        em = discord.Embed(color=discord.color.brand_green())
-        myAnimes = self.client.searchAnime(name,fields="alternative_titles")
+        await ctx.response.send_message("One moment... Searching...")
+        mymsg = await ctx.original_response()
+        em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="Query: " + name)
+        em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
+        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles")
+        em.set_thumbnail(url=myAnimes[0].main_picture)
         for myAnime in myAnimes:
-            print(myAnime.id, " ", myAnime.title)
-
+            myReturnText = ""
+            if myAnime.alternative_titles.synonyms is not None:
+                for entry in myAnime.alternative_titles.synonyms:
+                    myReturnText = myReturnText + entry + "\n"
+            if myAnime.alternative_titles.en is not None:
+                myReturnText = myReturnText + "English Name: " + myAnime.alternative_titles.en
+            if myAnime.alternative_titles.ja is not None:
+                myReturnText = myReturnText + "Japanese Name: " + myAnime.alternative_titles.jp
+            if myAnime.source != "":
+                if myAnime.source is not None:
+                    em.add_field(name=f"{myAnime.source}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
+                else:
+                    em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
+            else:
+                em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
+        await mymsg.edit(content="Search Complete!",embed=em)
+        
 async def setup(bot):
     bot = bot
     logging.info("Anime module activated.")
