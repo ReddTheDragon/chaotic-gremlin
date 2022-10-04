@@ -13,17 +13,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-#HERE WE HAVE OUR DEFAULT MODULES
+# import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
+import os, discord, aiohttp, asyncio, logging, sys, traceback, atexit, time
+# HERE WE HAVE OUR DEFAULT MODULES
 defaultmods = ['modules.image']
-from imaplib import Commands
-import os
-#import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
-import discord, aiohttp, asyncio, logging, sys, traceback, atexit, time
 from discord.ext import commands
 from discord.app_commands import CommandTree
 import checks.owner as owner
 class Bot(commands.Bot):
-    #handle close
+    # handle close
     async def async_clean(self):
         print(f"{RED}Logging off!{RESET}")
         logging.info("Bot Logoff Event")
@@ -46,18 +44,18 @@ except:
     RESET = ""
     YELLOW = ""
     WHITE = ""
-###VARIABLE DECLARATIONS###
-#is this a development version?
+# ##VARIABLE DECLARATIONS## #
+# is this a development version?
 IS_DEVELOPMENT_VERSION = 0
-#declare the version
+# declare the version
 VERS = "0.5 beta"
-###END VARIABLE DECLARATIONS###
+# ##END VARIABLE DECLARATIONS## #
 
-#setup logging
-#setup exception logging
+# setup logging
+# setup exception logging
 FORMAT = 'T: %(asctime)s | FILE: %(filename)s | FUNC: %(funcName)s | LINE: %(lineno)d | %(name)s, %(levelname)s: %(message)s'
 logging.basicConfig(filename='chaoticgremlin.log', filemode="a", level=logging.INFO, format=FORMAT)
-#setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
+# setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
 def HandleException(exctype, value, tb):
     tbf1 = traceback.format_tb(tb)
     tbf2 = ""
@@ -65,25 +63,25 @@ def HandleException(exctype, value, tb):
         tbf2 = tbf2 + line
     logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tbf2}")
     traceback.print_tb(tb)
-#set the python exception handler to use function 'HandleException'
+# set the python exception handler to use function 'HandleException'
 sys.excepthook = HandleException
 
 
-#function to load tokens
+# function to load tokens
 def get_token(isdev=0):
-    #NOT DEVELOPMENT
+    # NOT DEVELOPMENT
     if isdev==0:
         myFile = open(os.path.join(".", "tokens", "default.txt"), "r")
         for line in myFile:
             myTokenToReturn = line
-        #return the token we got from the file
+        # return the token we got from the file
         return myTokenToReturn
-    #IS DEVELOPMENT
+    # IS DEVELOPMENT
     elif isdev==1:
         myFile = open(os.path.join('.', 'tokens', 'dev.txt'))
         for line in myFile:
             myTokenToReturn = line
-        #return the token we got from the file
+        # return the token we got from the file
         return myTokenToReturn
 
 intents = discord.Intents.default()
@@ -93,7 +91,7 @@ bot = Bot(command_prefix="0", intents=intents)
 @bot.event
 async def on_ready():
     print(f'{RED}Logged on as {bot.user}{RESET}!')
-    #now load extensions
+    # now load extensions
     for ext in defaultmods:
         try:
             await bot.load_extension(ext)
@@ -176,7 +174,7 @@ async def unloadcog(ctx, cogname: str = ""):
         await do_message(ctx, f"Could not unload extension {cogname}")
         HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
 
-#this reloads all loaded cogs in initialmods
+# this reloads all loaded cogs in initialmods
 @bot.command(name="reloadcogs")
 @commands.check(owner.isowner)
 async def reloadCogs(ctx):
@@ -193,7 +191,7 @@ async def reloadCogs(ctx):
     cogTotal = 0
     cogSuccess = 0
     await asyncio.sleep(3)
-    #load the cogs
+    # load the cogs
     for cog in defaultmods:
         cogTotal = cogTotal + 1
         try:
@@ -217,7 +215,7 @@ async def do_embed(ctx, embd):
     else:
         await ctx.send(embed=embd)
 
-#THIS IS BLACK MAGIC, DO NOT TOUCH IT
+# THIS IS BLACK MAGIC, DO NOT TOUCH IT
 @bot.event
 async def on_command_error(ctx, error):
     print(error)
