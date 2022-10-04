@@ -14,3 +14,4 @@
 # information for Eclipse / Flash Builder.
 /tokens
 *.pyc
+lint.sh
