@@ -15,11 +15,13 @@
 
 # import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
 import os, discord, aiohttp, asyncio, logging, sys, traceback, atexit, time
-# HERE WE HAVE OUR DEFAULT MODULES
-defaultmods = ['modules.image']
 from discord.ext import commands
 from discord.app_commands import CommandTree
 import checks.owner as owner
+# HERE WE HAVE OUR DEFAULT MODULES
+defaultmods = ['modules.image']
+
+
 class Bot(commands.Bot):
     # handle close
     async def async_clean(self):
@@ -29,6 +31,8 @@ class Bot(commands.Bot):
     async def close(self):
         await self.async_clean()
         await super().close()
+
+
 try:
     import colorama
     from colorama import Fore, Back, Style
@@ -38,7 +42,7 @@ try:
     YELLOW = Fore.YELLOW + Style.BRIGHT
     WHITE = Fore.WHITE + Style.BRIGHT
     colorama.init()
-except:
+except Exception:
     RED = ""
     GREEN = ""
     RESET = ""
@@ -55,6 +59,8 @@ VERS = "0.5 beta"
 # setup exception logging
 FORMAT = 'T: %(asctime)s | FILE: %(filename)s | FUNC: %(funcName)s | LINE: %(lineno)d | %(name)s, %(levelname)s: %(message)s'
 logging.basicConfig(filename='chaoticgremlin.log', filemode="a", level=logging.INFO, format=FORMAT)
+
+
 # setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
 def HandleException(exctype, value, tb):
     tbf1 = traceback.format_tb(tb)
@@ -63,6 +69,8 @@ def HandleException(exctype, value, tb):
         tbf2 = tbf2 + line
     logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tbf2}")
     traceback.print_tb(tb)
+
+
 # set the python exception handler to use function 'HandleException'
 sys.excepthook = HandleException
 
@@ -70,23 +78,25 @@ sys.excepthook = HandleException
 # function to load tokens
 def get_token(isdev=0):
     # NOT DEVELOPMENT
-    if isdev==0:
+    if isdev == 0:
         myFile = open(os.path.join(".", "tokens", "default.txt"), "r")
         for line in myFile:
             myTokenToReturn = line
         # return the token we got from the file
         return myTokenToReturn
     # IS DEVELOPMENT
-    elif isdev==1:
+    elif isdev == 1:
         myFile = open(os.path.join('.', 'tokens', 'dev.txt'))
         for line in myFile:
             myTokenToReturn = line
         # return the token we got from the file
         return myTokenToReturn
 
+
 intents = discord.Intents.default()
 intents.message_content = True
 bot = Bot(command_prefix="0", intents=intents)
+
 
 @bot.event
 async def on_ready():
@@ -97,14 +107,15 @@ async def on_ready():
             await bot.load_extension(ext)
             logging.info(f"Extension {ext} loaded...")
             print(f"{YELLOW}{ext} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
-        except Exception as e:
+        except Exception:
             print(f'{RED}Failed to load extension \"{ext}\".{RESET}', file=sys.stderr)
             HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+
 
 @bot.event
 async def startup():
     await bot.tree.sync()
-    
+
 
 @bot.tree.command(name='ping', description="A")
 async def test(ctx):
@@ -113,16 +124,21 @@ async def test(ctx):
     mystr = "pong at {time}".format(time=myt)
     await ctx.response.send_message(mystr)
 
+
 @bot.command(name="forcetree")
 async def forcetree(ctx):
     await bot.tree.sync()
     print("B")
     await ctx.send("Bot commandtree synced")
+
+
 async def do_message(ctx, message):
     if isinstance(ctx, discord.Interaction):
         await ctx.response.send_message(message)
     else:
         await ctx.send(message)
+
+
 @bot.command(name="listcogs")
 @commands.check(owner.isowner)
 async def coglist(ctx):
@@ -132,6 +148,7 @@ async def coglist(ctx):
         em.add_field(name="Cog", value=str(k))
     await do_embed(ctx, em)
 
+
 @bot.command(name="loadcog")
 @commands.check(owner.isowner)
 async def loadcog(ctx, cogname: str = ""):
@@ -139,7 +156,7 @@ async def loadcog(ctx, cogname: str = ""):
         await do_message(ctx, "Cog name must not be blank.")
         return
     try:
-        if not cogname in defaultmods:
+        if cogname not in defaultmods:
             print(f"{YELLOW}Loading non-startup mod {cogname}{RESET}")
             logging.warning("Loading non-startup modification " + str(cogname))
         logging.warning(f"Loading extension {cogname}")
@@ -147,12 +164,13 @@ async def loadcog(ctx, cogname: str = ""):
         logging.warning(f"Loaded extension {cogname}")
         await do_message(ctx, f"Loaded extension {cogname}")
         print(f"{YELLOW}{cogname} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
-    except:
+    except Exception:
         print(f"{RED}Could not load extension{RESET}")
         logging.error(f"Could not load extension {cogname}")
         await do_message(ctx, f"Could not load extension {cogname}")
         HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
-    
+
+
 @bot.command(name="unloadcog")
 @commands.check(owner.isowner)
 async def unloadcog(ctx, cogname: str = ""):
@@ -160,7 +178,7 @@ async def unloadcog(ctx, cogname: str = ""):
         await do_message(ctx, "Cog name must not be blank.")
         return
     try:
-        if not cogname in defaultmods:
+        if cogname not in defaultmods:
             print(f"{YELLOW}Unloading non-startup mod {cogname}{RESET}")
             logging.warning("Unloading non-startup modification " + str(cogname))
         logging.warning(f"Unloading extension {cogname}")
@@ -168,11 +186,12 @@ async def unloadcog(ctx, cogname: str = ""):
         logging.warning(f"Unloaded extension {cogname}")
         print(f"{YELLOW}{cogname} {WHITE}[{RED}UNLOADED{WHITE}]{RESET}")
         await do_message(ctx, f"Unloaded extension {cogname}")
-    except:
+    except Exception:
         print(f"{RED}Could not unload extension{RESET}")
         logging.error(f"Could not unload extension {cogname}")
         await do_message(ctx, f"Could not unload extension {cogname}")
         HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+
 
 # this reloads all loaded cogs in initialmods
 @bot.command(name="reloadcogs")
@@ -201,7 +220,7 @@ async def reloadCogs(ctx):
             print(f"{YELLOW}{cog} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
             logging.info(f"Extension {cog} loaded.")
             cogSuccess = cogSuccess + 1
-        except Exception as e:
+        except Exception:
             print(f"{YELLOW}{cog} {WHITE}[{RED}ERROR{WHITE}]{RESET}")
             HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
     em = discord.Embed(title="Cog Reload Complete", color=discord.Color.yellow())
@@ -209,11 +228,13 @@ async def reloadCogs(ctx):
     em.add_field(name="Cogs Successfully Reloaded", value=str(cogSuccess) + " of " + str(cogTotal))
     await do_embed(ctx, em)
 
+
 async def do_embed(ctx, embd):
     if isinstance(ctx, discord.Interaction):
         await ctx.response.send_message(embed=embd)
     else:
         await ctx.send(embed=embd)
+
 
 # THIS IS BLACK MAGIC, DO NOT TOUCH IT
 @bot.event
@@ -261,14 +282,16 @@ async def on_command_error(ctx, error):
         e.add_field(name="Error", value=str(error))
         await do_embed(ctx, e)
         doLog = False
-    if doLog != False:
+    if doLog is not False:
         exctype = str(type(error))
         value = str(error)
         tb = sys.exc_info()[2]
         logging.critical(f"AN EXCEPTION HAS OCCURRED!\nException Type: {exctype}\nValue: {value}\nTraceback: \n{tb}")
+
+
 token = get_token(IS_DEVELOPMENT_VERSION)
 logging.info("Bot Login Event")
 try:
     bot.run(token)
-except Exception as e:
+except Exception:
     HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
