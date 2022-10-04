@@ -188,6 +188,7 @@ class imageModule(commands.Cog):
             elif type == 5:
                 noisetype = pgmagick.NoiseType.PoissonNoise
             await ctx.response.send_message("Thinking... Please be patient")
+            mymsg = await ctx.original_response()
             blob = pgmagick.Blob(imageBinary)
             myimg = pgmagick.Image(blob)
             myimg.equalize()
@@ -215,7 +216,7 @@ class imageModule(commands.Cog):
             if doexit is True:
                 return False
             logging.info("User {0}#{1} (<@{2}>) deepfried image in guild {3}".format(ctx.user.name,ctx.user.discriminator,ctx.user.id,ctx.guild.id))
-            await ctx.channel.send("I did it! Deepfried image! ",file=myDiscordFile)
+            await mymsg.edit(content="I did it! Deepfried image! ",attachments=[myDiscordFile])
                 
 async def setup(bot):
     bot = bot
