@@ -38,26 +38,25 @@ class Anime(commands.Cog):
     async def doanimesearch(self,ctx,name: str):
         await ctx.response.send_message("One moment... Searching...")
         mymsg = await ctx.original_response()
-        em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="Query: " + name)
+        em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="**Query: " + name + "**")
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
-        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles")
+        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles,source,nsfw,rating,media_type")
         em.set_thumbnail(url=myAnimes[0].main_picture)
         for myAnime in myAnimes:
-            myReturnText = ""
+            myReturnText = "**Also Known As: **\n"
             if myAnime.alternative_titles.synonyms is not None:
                 for entry in myAnime.alternative_titles.synonyms:
                     myReturnText = myReturnText + entry + "\n"
-            if myAnime.alternative_titles.en is not None:
-                myReturnText = myReturnText + "English Name: " + myAnime.alternative_titles.en
-            if myAnime.alternative_titles.ja is not None:
-                myReturnText = myReturnText + "Japanese Name: " + myAnime.alternative_titles.jp
-            if myAnime.source != "":
-                if myAnime.source is not None:
-                    em.add_field(name=f"{myAnime.source}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
-                else:
-                    em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
+                myReturnText = myReturnText + "\n"
+            if myAnime.alternative_titles.en != None:
+                myReturnText = myReturnText + "**English Name:** " + myAnime.alternative_titles.en + "\n"
+            if myAnime.alternative_titles.ja != None:
+                myReturnText = myReturnText + "**Japanese Name:** " + myAnime.alternative_titles.ja + "\n"
+            myReturnText = myReturnText + f"\n**Rating:** {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}\n\n**{myAnime.nsfw.isnsfw}**"
+            if myAnime.media_type != "":
+                em.add_field(name=f"{myAnime.media_type.capitalize()}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
             else:
-                em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}")
+                em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
         await mymsg.edit(content="Search Complete!",embed=em)
         
 async def setup(bot):

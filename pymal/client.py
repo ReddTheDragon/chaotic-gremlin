@@ -78,28 +78,28 @@ class Client(object):
 
             for i in key:
                 c = None
-                mid = None
-                mtitle = None
-                startdate = None
-                enddate = None
-                synop = None
-                meanscore = None
-                mrank = None
-                mpopularity = None
-                mnum_list_users = None
-                mnum_scoring_users = None
+                mid = ""
+                mtitle = ""
+                startdate = ""
+                enddate = ""
+                synop = ""
+                meanscore = ""
+                mrank = ""
+                mpopularity = ""
+                mnum_list_users = ""
+                mnum_scoring_users = ""
                 mnsfw = None
-                mcreated_at = None
-                mupdated_at = None
-                mmedia = None
+                mcreated_at = ""
+                mupdated_at = ""
+                mmedia = ""
                 mstatus = None
-                meps = None
+                meps = ""
                 mstart = None
                 mbrod = None
-                msource = None
-                mavgduration = None
-                mrating = None
-                mstudios = None
+                msource = ""
+                mavgduration = ""
+                mrating = ""
+                mstudios = ""
                 myGenres = None
                 mid = key[i]["id"]
                 mtitle = key[i]["title"]
@@ -169,7 +169,7 @@ class Client(object):
                 except KeyError:
                     pass
                 try:
-                    mstatus = key[i]["status"]
+                    mstatus = AnimeStatus(key[i]["status"])
                 except KeyError:
                     pass
                 try:
@@ -187,6 +187,7 @@ class Client(object):
                 try:
                     msource = key[i]["source"]
                 except KeyError:
+                    msource = ""
                     pass
                 try:
                     mavgduration = round(float(key[i]["average_episode_duration"] / 60),2)

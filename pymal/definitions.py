@@ -115,11 +115,11 @@ class AnimeAltTitles(object):
         if data["en"] != '':
             self.en = data["en"]
         else:
-            self.en = None
+            self.en = ""
         if data["ja"] != '':
             self.ja = data["ja"]
         else:
-            self.ja = None
+            self.ja = ""
 
 class AnimeGenre(object):
     def __init__(self, id, genre):
