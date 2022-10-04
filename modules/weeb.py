@@ -40,7 +40,7 @@ class Anime(commands.Cog):
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="**Query: " + name + "**")
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
-        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles,source,nsfw,rating,media_type")
+        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles,source,nsfw,rating,media_type,start_season")
         em.set_thumbnail(url=myAnimes[0].main_picture)
         for myAnime in myAnimes:
             myReturnText = "**Also Known As: **\n"
@@ -52,7 +52,7 @@ class Anime(commands.Cog):
                 myReturnText = myReturnText + "**English Name:** " + myAnime.alternative_titles.en + "\n"
             if myAnime.alternative_titles.ja != None:
                 myReturnText = myReturnText + "**Japanese Name:** " + myAnime.alternative_titles.ja + "\n"
-            myReturnText = myReturnText + f"\n**Rating:** {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}\n\n**{myAnime.nsfw.isnsfw}**"
+            myReturnText = myReturnText + f"\n**Rating:** {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}\n\n**Season: **{myAnime.start_season.season.capitalize()} {myAnime.start_season.year}"
             if myAnime.media_type != "":
                 em.add_field(name=f"{myAnime.media_type.capitalize()}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
             else:
