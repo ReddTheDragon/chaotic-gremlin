@@ -18,7 +18,7 @@ defaultmods = ['modules.image']
 from imaplib import Commands
 import os
 #import discord.py, aiohttp (async http, basically), sys module for exit, traceback for better error handling, asyncio for discord.py, atexit to do shit upon exit (I don't think breadbot does shit upon exiting), and asyncio (async functionality)
-import discord,aiohttp,asyncio,logging, sys, traceback, atexit, time
+import discord, aiohttp, asyncio, logging, sys, traceback, atexit, time
 from discord.ext import commands
 from discord.app_commands import CommandTree
 import checks.owner as owner
@@ -33,7 +33,7 @@ class Bot(commands.Bot):
         await super().close()
 try:
     import colorama
-    from colorama import Fore,Back,Style
+    from colorama import Fore, Back, Style
     RED = Fore.RED + Style.BRIGHT
     GREEN = Fore.GREEN + Style.BRIGHT
     RESET = Style.RESET_ALL
@@ -56,7 +56,7 @@ VERS = "0.5 beta"
 #setup logging
 #setup exception logging
 FORMAT = 'T: %(asctime)s | FILE: %(filename)s | FUNC: %(funcName)s | LINE: %(lineno)d | %(name)s, %(levelname)s: %(message)s'
-logging.basicConfig(filename='chaoticgremlin.log',filemode="a", level=logging.INFO,format=FORMAT)
+logging.basicConfig(filename='chaoticgremlin.log', filemode="a", level=logging.INFO, format=FORMAT)
 #setup function to handle exceptions (50/50, sometimes it works sometimes it doesn't)
 def HandleException(exctype, value, tb):
     tbf1 = traceback.format_tb(tb)
@@ -73,14 +73,14 @@ sys.excepthook = HandleException
 def get_token(isdev=0):
     #NOT DEVELOPMENT
     if isdev==0:
-        myFile = open(os.path.join(".","tokens","default.txt"),"r")
+        myFile = open(os.path.join(".", "tokens", "default.txt"), "r")
         for line in myFile:
             myTokenToReturn = line
         #return the token we got from the file
         return myTokenToReturn
     #IS DEVELOPMENT
     elif isdev==1:
-        myFile = open(os.path.join('.','tokens','dev.txt'))
+        myFile = open(os.path.join('.', 'tokens', 'dev.txt'))
         for line in myFile:
             myTokenToReturn = line
         #return the token we got from the file
@@ -88,7 +88,7 @@ def get_token(isdev=0):
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = Bot(command_prefix="0",intents=intents)
+bot = Bot(command_prefix="0", intents=intents)
 
 @bot.event
 async def on_ready():
@@ -101,14 +101,14 @@ async def on_ready():
             print(f"{YELLOW}{ext} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
         except Exception as e:
             print(f'{RED}Failed to load extension \"{ext}\".{RESET}', file=sys.stderr)
-            HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+            HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
 
 @bot.event
 async def startup():
     await bot.tree.sync()
     
 
-@bot.tree.command(name='ping',description="A")
+@bot.tree.command(name='ping', description="A")
 async def test(ctx):
     print("A")
     myt = time.ctime(time.time())
@@ -120,25 +120,25 @@ async def forcetree(ctx):
     await bot.tree.sync()
     print("B")
     await ctx.send("Bot commandtree synced")
-async def do_message(ctx,message):
-    if isinstance(ctx,discord.Interaction):
+async def do_message(ctx, message):
+    if isinstance(ctx, discord.Interaction):
         await ctx.response.send_message(message)
     else:
         await ctx.send(message)
 @bot.command(name="listcogs")
 @commands.check(owner.isowner)
 async def coglist(ctx):
-    em = discord.Embed(title="Loaded Cogs",color=discord.Color.red())
+    em = discord.Embed(title="Loaded Cogs", color=discord.Color.red())
     em.set_footer(text=bot.user.name + " version " + str(VERS))
     for k in bot.cogs:
-        em.add_field(name="Cog",value=str(k))
-    await do_embed(ctx,em)
+        em.add_field(name="Cog", value=str(k))
+    await do_embed(ctx, em)
 
 @bot.command(name="loadcog")
 @commands.check(owner.isowner)
-async def loadcog(ctx,cogname: str = ""):
+async def loadcog(ctx, cogname: str = ""):
     if cogname == "":
-        await do_message(ctx,"Cog name must not be blank.")
+        await do_message(ctx, "Cog name must not be blank.")
         return
     try:
         if not cogname in defaultmods:
@@ -147,19 +147,19 @@ async def loadcog(ctx,cogname: str = ""):
         logging.warning(f"Loading extension {cogname}")
         await bot.load_extension(cogname)
         logging.warning(f"Loaded extension {cogname}")
-        await do_message(ctx,f"Loaded extension {cogname}")
+        await do_message(ctx, f"Loaded extension {cogname}")
         print(f"{YELLOW}{cogname} {WHITE}[{GREEN}OK{WHITE}]{RESET}")
     except:
         print(f"{RED}Could not load extension{RESET}")
         logging.error(f"Could not load extension {cogname}")
-        await do_message(ctx,f"Could not load extension {cogname}")
-        HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+        await do_message(ctx, f"Could not load extension {cogname}")
+        HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
     
 @bot.command(name="unloadcog")
 @commands.check(owner.isowner)
-async def unloadcog(ctx,cogname: str = ""):
+async def unloadcog(ctx, cogname: str = ""):
     if cogname == "":
-        await do_message(ctx,"Cog name must not be blank.")
+        await do_message(ctx, "Cog name must not be blank.")
         return
     try:
         if not cogname in defaultmods:
@@ -169,22 +169,22 @@ async def unloadcog(ctx,cogname: str = ""):
         await bot.unload_extension(cogname)
         logging.warning(f"Unloaded extension {cogname}")
         print(f"{YELLOW}{cogname} {WHITE}[{RED}UNLOADED{WHITE}]{RESET}")
-        await do_message(ctx,f"Unloaded extension {cogname}")
+        await do_message(ctx, f"Unloaded extension {cogname}")
     except:
         print(f"{RED}Could not unload extension{RESET}")
         logging.error(f"Could not unload extension {cogname}")
-        await do_message(ctx,f"Could not unload extension {cogname}")
-        HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+        await do_message(ctx, f"Could not unload extension {cogname}")
+        HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
 
 #this reloads all loaded cogs in initialmods
 @bot.command(name="reloadcogs")
 @commands.check(owner.isowner)
 async def reloadCogs(ctx):
-    em = discord.Embed(title="Reloading Cogs...",color=discord.Color.yellow())
+    em = discord.Embed(title="Reloading Cogs...", color=discord.Color.yellow())
     logging.warning("Bot Owner Triggered Reload Of Extensions")
     print(f"{YELLOW}Bot owner triggered reload of extensions...{RESET}")
     em.set_footer(text=bot.user.name + " version " + str(VERS))
-    await do_embed(ctx,em)
+    await do_embed(ctx, em)
     for cog in defaultmods:
         print(f"{YELLOW}Unloading extension {cog}...{RESET}")
         logging.warning(f"Unloading extension {cog}...")
@@ -205,63 +205,63 @@ async def reloadCogs(ctx):
             cogSuccess = cogSuccess + 1
         except Exception as e:
             print(f"{YELLOW}{cog} {WHITE}[{RED}ERROR{WHITE}]{RESET}")
-            HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
-    em = discord.Embed(title="Cog Reload Complete",color=discord.Color.yellow())
+            HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
+    em = discord.Embed(title="Cog Reload Complete", color=discord.Color.yellow())
     em.set_footer(text=bot.user.name + " version " + str(VERS))
-    em.add_field(name="Cogs Successfully Reloaded",value=str(cogSuccess) + " of " + str(cogTotal))
-    await do_embed(ctx,em)
+    em.add_field(name="Cogs Successfully Reloaded", value=str(cogSuccess) + " of " + str(cogTotal))
+    await do_embed(ctx, em)
 
-async def do_embed(ctx,embd):
-    if isinstance(ctx,discord.Interaction):
+async def do_embed(ctx, embd):
+    if isinstance(ctx, discord.Interaction):
         await ctx.response.send_message(embed=embd)
     else:
         await ctx.send(embed=embd)
 
 #THIS IS BLACK MAGIC, DO NOT TOUCH IT
 @bot.event
-async def on_command_error(ctx,error):
+async def on_command_error(ctx, error):
     print(error)
     doLog = True
     if type(error) is commands.MissingRequiredArgument:
         doLog = False
-        print(ctx.author.name, " failed to execute a command due to a missing argument. (",ctx.command,")",sep="",file=sys.stderr)
-        await do_message(ctx,"You're missing a required argument.")
+        print(ctx.author.name, " failed to execute a command due to a missing argument. (", ctx.command, ")", sep="", file=sys.stderr)
+        await do_message(ctx, "You're missing a required argument.")
         doLog = True
     elif type(error) is discord.errors.Forbidden:
         logging.error("I do not have access to channel ID {0}".format(ctx.channel.id))
         print(f"{RED}403 Forbidden error for channel {WHITE}" + str(ctx.channel.id) + f"{RED}!{RESET}")
     elif type(error) is commands.BadArgument:
-        print(ctx.author.name, " failed to execute a command due to a bad argument. (",ctx.command,")",sep="",file=sys.stderr)
-        await do_message(ctx,"Bad argument.\n{:s}".format(str(error)))
+        print(ctx.author.name, " failed to execute a command due to a bad argument. (", ctx.command, ")", sep="", file=sys.stderr)
+        await do_message(ctx, "Bad argument.\n{:s}".format(str(error)))
         doLog = True
     elif type(error) is commands.CommandNotFound:
         async with ctx.channel.typing():
-            e = discord.Embed(title="Command not found.",color=discord.Color.red())
+            e = discord.Embed(title="Command not found.", color=discord.Color.red())
             e.set_footer(text=bot.user.name + " version " + str(VERS))
-            e.add_field(name="Error Type",value=str(type(error).__name__))
-        await do_embed(ctx,e)
+            e.add_field(name="Error Type", value=str(type(error).__name__))
+        await do_embed(ctx, e)
     elif type(error) is commands.CommandOnCooldown:
-        e = discord.Embed(title="Command Cooldown",color=discord.Color.red())
+        e = discord.Embed(title="Command Cooldown", color=discord.Color.red())
         e.set_footer(text=bot.user.name + " version " + str(VERS))
-        e.add_field(name="Error",value=str(error))
-        await do_embed(ctx,e)
+        e.add_field(name="Error", value=str(error))
+        await do_embed(ctx, e)
     elif type(error) is discord.app_commands.errors.CommandInvokeError:
-        print(error,file=sys.stderr)
-        e = discord.Embed(title="Your command cannot be completed as dialed.",color=discord.Color.red())
+        print(error, file=sys.stderr)
+        e = discord.Embed(title="Your command cannot be completed as dialed.", color=discord.Color.red())
         e.set_footer(text=bot.user.name + " version " + str(VERS))
-        e.add_field(name="Error Type",value=str(type(error).__name__))
-        e.add_field(name="Error",value=str(error))
-        await do_embed(ctx,e)
+        e.add_field(name="Error Type", value=str(type(error).__name__))
+        e.add_field(name="Error", value=str(error))
+        await do_embed(ctx, e)
         doLog = False
     elif type(error) is commands.CheckFailure:
-        await do_message(ctx,"You lack the proper access for this command. If you believe this is in error, please contact the bot author.")
+        await do_message(ctx, "You lack the proper access for this command. If you believe this is in error, please contact the bot author.")
     else:
-        print(error,file=sys.stderr)
-        e = discord.Embed(title="Your command cannot be completed as dialed.",color=discord.Color.red())
+        print(error, file=sys.stderr)
+        e = discord.Embed(title="Your command cannot be completed as dialed.", color=discord.Color.red())
         e.set_footer(text=bot.user.name + " version " + str(VERS))
-        e.add_field(name="Error Type",value=str(type(error).__name__))
-        e.add_field(name="Error",value=str(error))
-        await do_embed(ctx,e)
+        e.add_field(name="Error Type", value=str(type(error).__name__))
+        e.add_field(name="Error", value=str(error))
+        await do_embed(ctx, e)
         doLog = False
     if doLog != False:
         exctype = str(type(error))
@@ -273,4 +273,4 @@ logging.info("Bot Login Event")
 try:
     bot.run(token)
 except Exception as e:
-    HandleException(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2])
+    HandleException(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])
