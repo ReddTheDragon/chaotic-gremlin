@@ -19,7 +19,7 @@ from discord.ext import commands
 from discord.app_commands import CommandTree
 import checks.owner as owner
 # HERE WE HAVE OUR DEFAULT MODULES
-defaultmods = ['modules.image']
+defaultmods = ['modules.image',"modules.weeb"]
 
 
 class Bot(commands.Bot):
@@ -52,7 +52,7 @@ except Exception:
 # is this a development version?
 IS_DEVELOPMENT_VERSION = 0
 # declare the version
-VERS = "0.5 beta"
+VERS = "0.51 beta"
 # ##END VARIABLE DECLARATIONS## #
 
 # setup logging

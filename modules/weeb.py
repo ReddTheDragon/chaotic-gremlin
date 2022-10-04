@@ -35,7 +35,7 @@ class Anime(commands.Cog):
 
 
     @discord.app_commands.command(name="search")
-    async def doanimesearch(self,ctx,name: str):
+    async def AniSearch(self,ctx,name: str):
         await ctx.response.send_message("One moment... Searching...")
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="**Query: " + name + "**")
@@ -57,6 +57,7 @@ class Anime(commands.Cog):
                 em.add_field(name=f"{myAnime.media_type.capitalize()}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
             else:
                 em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
+        logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-searched for {name}")
         await mymsg.edit(content="Search Complete!",embed=em)
         
 async def setup(bot):
