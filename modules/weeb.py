@@ -116,10 +116,7 @@ class Anime(commands.Cog):
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
         # lazy code
         pageData, myAnimes = self.client.searchAnime(name,20,fields="alternative_titles,source,rating,media_type,start_season,nsfw")
-        # set the thumbnail if it is safe for work
-        for i in myAnimes:
-            if i.nsfw.nsfw_id == 2:
-                em.set_thumbnail(url=i.main_picture)
+        isThumbSet = False
         totalAnimesListed = 0
         while totalAnimesListed < 5:
             for myAnime in myAnimes:
@@ -128,10 +125,16 @@ class Anime(commands.Cog):
                     break
                 if myAnime.nsfw.nsfw_id == 1 or myAnime.nsfw.nsfw_id == 0:
                     if ctx.channel.nsfw == True:
+                        if isThumbSet == False:
+                            em.set_thumbnail(url=i.main_picture)
+                            isThumbSet = True
                         myAnime, em = self.handleReturnText(myAnime, em)
                     else:
                         totalAnimesListed = totalAnimesListed - 1
                 else:
+                    if isThumbSet == False:
+                        em.set_thumbnail(url=i.main_picture)
+                        isThumbSet = True
                     myAnime, em = self.handleReturnText(myAnime, em)
         logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-searched for \"{name}\" in guild {ctx.guild_id}")
         em.set_footer(text="Chaotic Gremlin by TheReddDragon")
