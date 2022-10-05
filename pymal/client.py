@@ -13,7 +13,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import logging, pycurl, json
-from pymal.definitions import AnimeBroadcast, AnimeFields, AnimeNsfw, AnimeRating, AnimeSeason, AnimeStatus, AnimeAltTitles, AnimeGenres, AnimeGenre, AnimeStudio, AnimeStudios
+from pymal.definitions import AnimeBroadcast, AnimeFields, AnimeNsfw, AnimeRating, PaginationTracker, AnimeSeason, AnimeStatus, AnimeAltTitles, AnimeGenres, AnimeGenre, AnimeStudio, AnimeStudios
 from urllib.parse import quote
 from io import BytesIO
 
@@ -26,7 +26,7 @@ class NetworkError(Exception):
         super().__init__(self.message)
 
 class BadRequestException(Exception):
-    def __init__(self, message, object: object=None):
+    def __init__(self, message, objec: object=None):
         self.message = message
         if isinstance(objec,pycurl.Curl):
             logging.warning("Closed pycurl object")
@@ -45,7 +45,7 @@ class Client(object):
 
 
     def __sanitizeUrl(self,data):
-        myData = quote(data)
+        myData = quote(data,safe="/&,")
         return myData
 
 
@@ -55,11 +55,11 @@ class Client(object):
         c.setopt(pycurl.HTTPHEADER, [f"X-MAL-CLIENT-ID: {self.__token}"])
         # if options aren't set, just access the endpoint url
         if options is None:
-            c.setopt(c.URL, "https://api.myanimelist.net/v2" + str(endpoint))
+            c.setopt(c.URL, "https://api.myanimelist.net/v2" + str(endpoint) + "?nsfw=true")
             logging.info("Retrieving https://api.myanimelist.net/v2" + str(endpoint) + "...")
         # if options ARE set, access endpoint url with the options
         else:
-            c.setopt(c.URL, "https://api.myanimelist.net/v2" + str(endpoint) + "?" + str(options))
+            c.setopt(c.URL, "https://api.myanimelist.net/v2" + str(endpoint) + "?" + str(options) + "&nsfw=true")
             logging.info("Retrieving https://api.myanimelist.net/v2" + str(endpoint) + "?" + str(options) + "...")
         c.setopt(c.WRITEDATA, buffer)
         c.perform()
@@ -75,8 +75,155 @@ class Client(object):
         body = body.decode("utf-8")
         return body
 
+    def doKeyProcessing(self,myData):
+        myAnime = []
+        myPagination = PaginationTracker("")
+        # set pagination data
+        if "next" in myData["paging"].keys():
+            myPagination.updatePagination(nextURL = myData["paging"]["next"])
+        else:
+            myPagination.updatePagination(nextURL = "")
+        if "previous" in myData["paging"].keys():
+            myPagination.updatePagination(previousURL = myData["paging"]["previous"])
+        else:
+            myPagination.updatePagination(previousURL = "")
+        for key in myData["data"]:
+
+            for i in key:
+                c = None
+                mid = ""
+                mtitle = ""
+                startdate = ""
+                enddate = ""
+                synop = ""
+                meanscore = ""
+                mrank = ""
+                mpopularity = ""
+                mnum_list_users = ""
+                mnum_scoring_users = ""
+                mnsfw = None
+                mcreated_at = ""
+                mupdated_at = ""
+                mmedia = ""
+                mstatus = None
+                meps = ""
+                mstart = None
+                mbrod = None
+                msource = ""
+                mavgduration = ""
+                mrating = ""
+                myStudios = ""
+                myGenres = None
+                mid = key[i]["id"]
+                mtitle = key[i]["title"]
+                try:
+                    mpic = key[i]["main_picture"]["large"]
+                except KeyError:
+                    try:
+                        mpic = key[i]["main_pciture"]["medium"]
+                    except KeyError:
+                        pass
+                    pass
+                # get the keys for the alt titles
+                try:
+                    c = AnimeAltTitles(key[i]["alternative_titles"])
+                except KeyError:
+                    pass
+                try:
+                    startdate = key[i]["start_date"]
+                except KeyError:
+                    pass
+                try:
+                    enddate = key[i]["end_date"]
+                except KeyError:
+                    pass
+                try:
+                    synop = key[i]["synopsis"]
+                except KeyError:
+                    pass
+                try:
+                    meanscore = key[i]["mean"]
+                except KeyError:
+                    pass
+                try:
+                    mrank = key[i]["rank"]
+                except KeyError:
+                    pass
+                try:
+                    mpopularity = key[i]["popularity"]
+                except KeyError:
+                    pass
+                try:
+                    mnum_list_users = key[i]["num_list_users"]
+                except KeyError:
+                    pass
+                try:
+                    mnum_scoring_users = key[i]["num_scoring_users"]
+                except KeyError:
+                    pass
+                try:
+                    mnsfw = AnimeNsfw(key[i]["nsfw"])
+                except KeyError:
+                    pass
+                myGenres = AnimeGenres()
+                try:
+                    for ow in key[i]["genres"]:
+                        mytempgenre = AnimeGenre(ow["id"],ow["name"])
+                        myGenres.add(mytempgenre)
+                except KeyError:
+                    pass
+                try:
+                    mcreated_at = key[i]["created_at"]
+                except KeyError:
+                    pass
+                try:
+                    mupdated_at = key[i]["updated_at"]
+                except KeyError:
+                    pass
+                try:
+                    mmedia = key[i]["media_type"]
+                except KeyError:
+                    pass
+                try:
+                    mstatus = AnimeStatus(key[i]["status"])
+                except KeyError:
+                    pass
+                try:
+                    meps = key[i]["num_episodes"]
+                except KeyError:
+                    pass
+                try:
+                    mstart = AnimeSeason(key[i]["start_season"]["year"],key[i]["start_season"]["season"])
+                except KeyError:
+                    pass
+                try:
+                    mbrod = AnimeBroadcast(key[i]["broadcast"]["day_of_the_week"], key[i]["broadcast"]["start_time"])
+                except KeyError:
+                    pass
+                try:
+                    msource = key[i]["source"]
+                except KeyError:
+                    msource = ""
+                    pass
+                try:
+                    mavgduration = round(float(key[i]["average_episode_duration"] / 60),2)
+                except KeyError:
+                    pass
+                try:
+                    mrating = AnimeRating(key[i]["rating"])
+                except KeyError:
+                    pass
+                myStudios = AnimeStudios()
+                try:
+                    for i in key[i]["studios"]:
+                        myStudios.add(AnimeStudio(i["id"],i["name"]))
+                except KeyError:
+                    pass
+                myAnime.append(AnimeFields(mid,mtitle,mpic,c,startdate,enddate,synop,meanscore,mrank,mpopularity,mnum_list_users,mnum_scoring_users,mnsfw,myGenres,mcreated_at,mupdated_at,mmedia,mstatus,meps,mstart,mbrod,msource,mavgduration,mrating,myStudios))
+        return myPagination, myAnime
+
     def get_anime(self,query,fields = None):
-        myquery = quote(query)
+        myquery = quote(query,safe="/&")
         myData = ""
         if fields is None:
             myData = self.__access_endpoint(self.__animeEndpoint(query))
@@ -84,7 +231,6 @@ class Client(object):
             fields = quote(fields)
             myData = self.__access_endpoint(self.__animeEndpoint(query),f"fields={fields}")
         myData = json.loads(myData)
-        print(myData)
         c = None
         mid = ""
         mtitle = ""
@@ -112,8 +258,12 @@ class Client(object):
         mid = myData["id"]
         mtitle = myData["title"]
         try:
-            mpic = myData["main_picture"]["medium"]
+            mpic = myData["main_picture"]["large"]
         except KeyError:
+            try:
+                mpic = myData["main_pciture"]["medium"]
+            except KeyError:
+                pass
             pass
         # get the keys for the alt titles
         try:
@@ -212,145 +362,27 @@ class Client(object):
             pass
         return AnimeFields(mid,mtitle,mpic,c,startdate,enddate,synop,meanscore,mrank,mpopularity,mnum_list_users,mnum_scoring_users,mnsfw,myGenres,mcreated_at,mupdated_at,mmedia,mstatus,meps,mstart,mbrod,msource,mavgduration,mrating,myStudios)
 
+    def handleNewAnimePage(self,nextQuery):
+        myData = ""
+        myPagination = PaginationTracker("")
+        myData = self.__access_endpoint(self.endpoints["anime"],f"{nextQuery}")
+        dataReturned = json.loads(myData)
+        myPagination, myAnime = self.doKeyProcessing(dataReturned)
+        return myPagination, myAnime
+    
     # searches for an anime
     def searchAnime(self,query,limit=10,fields=None):
         myquery = self.__sanitizeUrl(query)
         myData = ""
+        myPagination = PaginationTracker("")
         if fields is None:
             myData = self.__access_endpoint(self.endpoints["anime"],f"q={myquery}&limit={limit}")
+            print(limit)
         else:
             fields = quote(fields)
+            print(limit)
             myData = self.__access_endpoint(self.endpoints["anime"],f"q={myquery}&limit={limit}&fields={fields}")
         dataReturned = json.loads(myData)
-        myAnime = []
-        for key in dataReturned["data"]:
-
-            for i in key:
-                c = None
-                mid = ""
-                mtitle = ""
-                startdate = ""
-                enddate = ""
-                synop = ""
-                meanscore = ""
-                mrank = ""
-                mpopularity = ""
-                mnum_list_users = ""
-                mnum_scoring_users = ""
-                mnsfw = None
-                mcreated_at = ""
-                mupdated_at = ""
-                mmedia = ""
-                mstatus = None
-                meps = ""
-                mstart = None
-                mbrod = None
-                msource = ""
-                mavgduration = ""
-                mrating = ""
-                myStudios = ""
-                myGenres = None
-                mid = key[i]["id"]
-                mtitle = key[i]["title"]
-                try:
-                    mpic = key[i]["main_picture"]["medium"]
-                except KeyError:
-                    pass
-                # get the keys for the alt titles
-                try:
-                    c = AnimeAltTitles(key[i]["alternative_titles"])
-                except KeyError:
-                    pass
-                try:
-                    startdate = key[i]["start_date"]
-                except KeyError:
-                    pass
-                try:
-                    enddate = key[i]["end_date"]
-                except KeyError:
-                    pass
-                try:
-                    synop = key[i]["synopsis"]
-                except KeyError:
-                    pass
-                try:
-                    meanscore = key[i]["mean"]
-                except KeyError:
-                    pass
-                try:
-                    mrank = key[i]["rank"]
-                except KeyError:
-                    pass
-                try:
-                    mpopularity = key[i]["popularity"]
-                except KeyError:
-                    pass
-                try:
-                    mnum_list_users = key[i]["num_list_users"]
-                except KeyError:
-                    pass
-                try:
-                    mnum_scoring_users = key[i]["num_scoring_users"]
-                except KeyError:
-                    pass
-                try:
-                    mnsfw = AnimeNsfw(key[i]["nsfw"])
-                except KeyError:
-                    pass
-                myGenres = AnimeGenres()
-                try:
-                    for ow in key[i]["genres"]:
-                        mytempgenre = AnimeGenre(ow["id"],ow["name"])
-                        myGenres.add(mytempgenre)
-                except KeyError:
-                    pass
-                try:
-                    mcreated_at = key[i]["created_at"]
-                except KeyError:
-                    pass
-                try:
-                    mupdated_at = key[i]["updated_at"]
-                except KeyError:
-                    pass
-                try:
-                    mmedia = key[i]["media_type"]
-                except KeyError:
-                    pass
-                try:
-                    mstatus = AnimeStatus(key[i]["status"])
-                except KeyError:
-                    pass
-                try:
-                    meps = key[i]["num_episodes"]
-                except KeyError:
-                    pass
-                try:
-                    mstart = AnimeSeason(key[i]["start_season"]["year"],key[i]["start_season"]["season"])
-                except KeyError:
-                    pass
-                try:
-                    mbrod = AnimeBroadcast(key[i]["broadcast"]["day_of_the_week"], key[i]["broadcast"]["start_time"])
-                except KeyError:
-                    pass
-                try:
-                    msource = key[i]["source"]
-                except KeyError:
-                    msource = ""
-                    pass
-                try:
-                    mavgduration = round(float(key[i]["average_episode_duration"] / 60),2)
-                except KeyError:
-                    pass
-                try:
-                    mrating = AnimeRating(key[i]["rating"])
-                except KeyError:
-                    pass
-                myStudios = AnimeStudios()
-                try:
-                    for i in key[i]["studios"]:
-                        myStudios.add(AnimeStudio(i["id"],i["name"]))
-                except KeyError:
-                    pass
-                myAnime.append(AnimeFields(mid,mtitle,mpic,c,startdate,enddate,synop,meanscore,mrank,mpopularity,mnum_list_users,mnum_scoring_users,mnsfw,myGenres,mcreated_at,mupdated_at,mmedia,mstatus,meps,mstart,mbrod,msource,mavgduration,mrating,myStudios))
-
-        return myAnime
+        
+        myPagination, myAnime = self.doKeyProcessing(dataReturned)
+        return myPagination, myAnime

@@ -17,6 +17,7 @@
 import os, discord, aiohttp, asyncio, logging, sys, traceback, atexit, time
 from discord.ext import commands
 from discord.app_commands import CommandTree
+from pymal.client import BadRequestException
 import checks.owner as owner
 # HERE WE HAVE OUR DEFAULT MODULES
 defaultmods = ['modules.image',"modules.weeb"]
@@ -235,11 +236,9 @@ async def do_embed(ctx, embd):
     else:
         await ctx.send(embed=embd)
 
-
 # THIS IS BLACK MAGIC, DO NOT TOUCH IT
 @bot.event
 async def on_command_error(ctx, error):
-    print(error)
     doLog = True
     if type(error) is commands.MissingRequiredArgument:
         doLog = False

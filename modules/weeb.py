@@ -32,19 +32,28 @@ class Anime(commands.Cog):
             print(token)
         self.client = Client(token)
         print(self.client)
-
     @discord.app_commands.command(name="anime")
     async def AniGrab(self,ctx,id: str):
         await ctx.response.send_message("One moment...")
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Anime Query",description="**ID: " + str(id) + "**")
         myAnime = ""
-        try:
-            myAnime = self.client.get_anime(id,fields="alternative_titles,rating,media_type,start_season,status,synopsis,mean,num_list_users,num_scoring_users,genres,num_episodes,studios,genres")
-        except BadRequestException:
-            logging.error("Logged a bad request!")
-            await mymsg.edit(contents="Sorry, your search returned as a bad request.")
-        em.description = em.description + f"\n**Name:** {myAnime.title}\n**Media Type:** {myAnime.media_type}\n**Mean Rating:** {myAnime.mean}\n**Number of Episodes:** {myAnime.num_episodes}\n**Status:** {myAnime.status.readable_status.capitalize()}\n**Start Season:** {myAnime.start_season.season.capitalize()} {myAnime.start_season.year}"
+        myAnime = self.client.get_anime(id,fields="alternative_titles,nsfw,rating,media_type,start_season,status,synopsis,mean,num_list_users,num_scoring_users,genres,num_episodes,studios,genres")
+        if myAnime.nsfw.nsfw_id == 1 or myAnime.nsfw.nsfw_id == 2:
+            if ctx.channel.nsfw == False:
+                tag = ""
+                if myAnime.nsfw.nsfw_id == 1:
+                    tag = "potential NSFW"
+                elif myAnime.nsfw.nsfw_id == 2:
+                    tag = "NSFW"
+                else:
+                    tag = "<<<THERE HAS BEEN AN ERROR PLEASE CONTACT BOT DEV>>>"
+                    logging.critical(f"<<<BUG ALERT>>> Anime {myAnime.title} (id {myAnime.id}) has NSFW ID of {myAnime.nsfw.nsfw_id}.")
+                em.description = em.description + f"\nSorry, but I cannot display {tag} anime in this chat. Please try again in an age-restricted channel."
+                em.color=discord.Color.red()
+                await mymsg.edit(content="Error retrieving anime...",embed=em)
+                return
+        em.description = em.description + f"\n**Name:** {myAnime.title}\n**Media Type:** {myAnime.media_type}\n**Mean Rating:** {myAnime.mean}\n**Number of Episodes:** {myAnime.num_episodes}\n**Status:** {myAnime.status.readable_status.capitalize()}\n**Start Season:** {myAnime.start_season.season.capitalize()} {myAnime.start_season.year}\n**Rated {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}**\**Safety:** *{myAnime.nsfw.isnsfw.capitalize()}*"
         akaData = ""
         studiosData = ""
         if myAnime.alternative_titles.synonyms is not None:
@@ -68,36 +77,62 @@ class Anime(commands.Cog):
         em.set_image(url=myAnime.main_picture)
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
         em.set_footer(text="Chaotic Gremlin by TheReddDragon")
+        if len(myAnime.synopsis) > 950:
+            em.add_field(name="Synopsis",value=f"||{myAnime.synopsis[0:950]}... View the rest on MAL.||")
+        else:
+            em.add_field(name="Synopsis",value=f"||{myAnime.synopsis}||")
+        logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-grabbed {myAnime.id} ({myAnime.title}) in guild {ctx.guild_id}")
         await mymsg.edit(content="I found your anime!",embed=em)
+
+
+    def handleReturnText(self,anime,embed):
+        myReturnText = "**Also Known As: **\n"
+        if anime.alternative_titles.synonyms is not None:
+            for entry in anime.alternative_titles.synonyms:
+                myReturnText = myReturnText + entry + "\n"
+            myReturnText = myReturnText + "\n"
+        if anime.alternative_titles.en != None:
+            myReturnText = myReturnText + "**English Name:** " + anime.alternative_titles.en + "\n"
+        if anime.alternative_titles.ja != None:
+            myReturnText = myReturnText + "**Japanese Name:** " + anime.alternative_titles.ja + "\n"
+        myReturnText = myReturnText + f"\n**Rating:** {anime.rating.human_rating} - {anime.rating.rating_desc}\n\n**Season: **{anime.start_season.season.capitalize()} {anime.start_season.year}"
+        if anime.media_type != "":
+            embed.add_field(name=f"{anime.media_type.capitalize()}: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}",inline=True)
+        else:
+            embed.add_field(name=f"Entry: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}",inline=True)
+        return anime, embed
 
     @discord.app_commands.command(name="search")
     async def AniSearch(self,ctx,name: str):
-        await ctx.response.send_message("One moment... Searching...")
+        await ctx.response.send_message("One moment... Searching...  If this takes more than a few seconds, please try again with a longer search string.")
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Anime Search",description="**Query: " + name + "**")
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
-        myAnimes = self.client.searchAnime(name,5,fields="alternative_titles,source,rating,media_type,start_season")
-        em.set_thumbnail(url=myAnimes[0].main_picture)
-        for myAnime in myAnimes:
-            myReturnText = "**Also Known As: **\n"
-            if myAnime.alternative_titles.synonyms is not None:
-                for entry in myAnime.alternative_titles.synonyms:
-                    myReturnText = myReturnText + entry + "\n"
-                myReturnText = myReturnText + "\n"
-            if myAnime.alternative_titles.en != None:
-                myReturnText = myReturnText + "**English Name:** " + myAnime.alternative_titles.en + "\n"
-            if myAnime.alternative_titles.ja != None:
-                myReturnText = myReturnText + "**Japanese Name:** " + myAnime.alternative_titles.ja + "\n"
-            myReturnText = myReturnText + f"\n**Rating:** {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}\n\n**Season: **{myAnime.start_season.season.capitalize()} {myAnime.start_season.year}"
-            if myAnime.media_type != "":
-                em.add_field(name=f"{myAnime.media_type.capitalize()}: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
-            else:
-                em.add_field(name=f"Entry: {myAnime.title}",value=f"ID: {myAnime.id}\n{myReturnText}",inline=True)
-        logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-searched for {name}")
+        # lazy code
+        pageData, myAnimes = self.client.searchAnime(name,20,fields="alternative_titles,source,rating,media_type,start_season,nsfw")
+        # set the thumbnail if it is safe for work
+        for i in myAnimes:
+            if i.nsfw.nsfw_id == 2:
+                em.set_thumbnail(url=i.main_picture)
+        totalAnimesListed = 0
+        while totalAnimesListed < 5:
+            for myAnime in myAnimes:
+                totalAnimesListed = totalAnimesListed + 1
+                if totalAnimesListed == 6:
+                    break
+                if myAnime.nsfw.nsfw_id == 1 or myAnime.nsfw.nsfw_id == 0:
+                    if ctx.channel.nsfw == True:
+                        myAnime, em = self.handleReturnText(myAnime, em)
+                    else:
+                        totalAnimesListed = totalAnimesListed - 1
+                else:
+                    myAnime, em = self.handleReturnText(myAnime, em)
+        logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-searched for \"{name}\" in guild {ctx.guild_id}")
         em.set_footer(text="Chaotic Gremlin by TheReddDragon")
         await mymsg.edit(content="Search Complete!",embed=em)
-        
+tree = ""
 async def setup(bot):
     bot = bot
+    tree = bot.tree
     logging.info("Anime module activated.")
     await bot.add_cog(Anime(bot))

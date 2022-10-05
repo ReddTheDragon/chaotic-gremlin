@@ -119,11 +119,24 @@ class PaginationTracker(object):
     def __init__(self, nextURL, previousURL = None):
         self.nextURL = nextURL
         self.previousURL = previousURL
+        if self.nextURL is not None:
+            mySplit = self.nextURL.split("?")
+            if len(mySplit) > 1:
+                self.paginationDevNext = mySplit[1]
+        if self.previousURL is not None:
+            mySplit = self.previousURL.split("?")
+            if len(mySplit) > 1:
+                self.paginationDevPrevious = mySplit[1]
+
 
 
     def updatePagination(self,nextURL = None, previousURL = None):
-        self.nextURL = nextURL
-        self.previousURL = previousURL
+        if nextURL is not None:
+            self.nextURL = nextURL
+            self.paginationDevNext = self.nextURL.split("?")[1]
+        if self.previousURL is not None:
+            self.previousURL = previousURL
+            self.paginationDevPrevious = self.previousURL.split("?"[1])
 
 class AnimeAltTitles(object):
     def __init__(self, data):
