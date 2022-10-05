@@ -39,12 +39,12 @@ class Anime(commands.Cog):
         em = discord.Embed(color=ctx.user.accent_color,title="Anime Query",description="**ID: " + str(id) + "**")
         myAnime = ""
         myAnime = self.client.get_anime(id,fields="alternative_titles,nsfw,rating,media_type,start_season,status,synopsis,mean,num_list_users,num_scoring_users,genres,num_episodes,studios,genres")
-        if myAnime.nsfw.nsfw_id == 1 or myAnime.nsfw.nsfw_id == 2:
+        if myAnime.nsfw.nsfw_id == 1 or myAnime.nsfw.nsfw_id == 0:
             if ctx.channel.nsfw == False:
                 tag = ""
                 if myAnime.nsfw.nsfw_id == 1:
                     tag = "potential NSFW"
-                elif myAnime.nsfw.nsfw_id == 2:
+                elif myAnime.nsfw.nsfw_id == 0:
                     tag = "NSFW"
                 else:
                     tag = "<<<THERE HAS BEEN AN ERROR PLEASE CONTACT BOT DEV>>>"
@@ -53,34 +53,38 @@ class Anime(commands.Cog):
                 em.color=discord.Color.red()
                 await mymsg.edit(content="Error retrieving anime...",embed=em)
                 return
-        em.description = em.description + f"\n**Name:** {myAnime.title}\n**Media Type:** {myAnime.media_type}\n**Mean Rating:** {myAnime.mean}\n**Number of Episodes:** {myAnime.num_episodes}\n**Status:** {myAnime.status.readable_status.capitalize()}\n**Start Season:** {myAnime.start_season.season.capitalize()} {myAnime.start_season.year}\n**Rated {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}**\**Safety:** *{myAnime.nsfw.isnsfw.capitalize()}*"
+        em.description = em.description + f"\n**Name:** {myAnime.title}\n**Media Type:** {myAnime.media_type}\n**Mean Rating:** {myAnime.mean}\n**Number of Episodes:** {myAnime.num_episodes}\n**Status:** {myAnime.status.readable_status.capitalize()}\n"
+        if myAnime.start_season is not None:
+            em.description = em.description + f"**Start Season:** {myAnime.start_season.season.capitalize()} {myAnime.start_season.year}\n**Rated {myAnime.rating.human_rating} - {myAnime.rating.rating_desc}**\n"
+        em.description = em.description + f"**Safety:** *{myAnime.nsfw.isnsfw.capitalize()}*"
         akaData = ""
         studiosData = ""
         if myAnime.alternative_titles.synonyms is not None:
             for i in myAnime.alternative_titles.synonyms:
                 akaData = akaData + f"{i}\n"
-            em.add_field(name=f"Also Known As",value=f"{akaData}")
-        if myAnime.alternative_titles.en != None:
-            em.add_field(name=f"English Name",value=f"{myAnime.alternative_titles.en}")
-        if myAnime.alternative_titles.ja != None:
-            em.add_field(name=f"Japanese Name",value=f"{myAnime.alternative_titles.ja}")
-        if myAnime.studios != "":
+            em.add_field(name=f"Also Known As",value=f"{akaData}",inline=False)
+        if myAnime.alternative_titles.en != '':
+            em.add_field(name=f"English Name",value=f"{myAnime.alternative_titles.en}",inline=False)
+        if myAnime.alternative_titles.ja != '':
+            em.add_field(name=f"Japanese Name",value=f"{myAnime.alternative_titles.ja}",inline=False)
+        if myAnime.studios is not None:
             studiosData = ""
             for i in myAnime.studios.studios:
                 studiosData = studiosData + f"{i.name}\n"
-            em.add_field(name=f"Studios",value=f"{studiosData}")
+            em.add_field(name=f"Studios",value=f"{studiosData}",inline=False)
         if myAnime.genres is not None:
             genresData = ""
             for i in myAnime.genres.genres:
                 genresData = genresData + f"{i.name}\n"
-            em.add_field(name=f"Genres",value=f"{genresData}")
+            em.add_field(name=f"Genres",value=f"{genresData}",inline=False)
         em.set_image(url=myAnime.main_picture)
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
         em.set_footer(text="Chaotic Gremlin by TheReddDragon")
-        if len(myAnime.synopsis) > 950:
-            em.add_field(name="Synopsis",value=f"||{myAnime.synopsis[0:950]}... View the rest on MAL.||")
-        else:
-            em.add_field(name="Synopsis",value=f"||{myAnime.synopsis}||")
+        if myAnime.synopsis is not None:
+            if len(myAnime.synopsis) > 950:
+                em.add_field(name="Synopsis",value=f"||{myAnime.synopsis[0:950]}... View the rest on MAL.||",inline=False)
+            else:
+                em.add_field(name="Synopsis",value=f"||{myAnime.synopsis}||",inline=False)
         logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) anime-grabbed {myAnime.id} ({myAnime.title}) in guild {ctx.guild_id}")
         await mymsg.edit(content="I found your anime!",embed=em)
 
@@ -95,11 +99,13 @@ class Anime(commands.Cog):
             myReturnText = myReturnText + "**English Name:** " + anime.alternative_titles.en + "\n"
         if anime.alternative_titles.ja != None:
             myReturnText = myReturnText + "**Japanese Name:** " + anime.alternative_titles.ja + "\n"
-        myReturnText = myReturnText + f"\n**Rating:** {anime.rating.human_rating} - {anime.rating.rating_desc}\n\n**Season: **{anime.start_season.season.capitalize()} {anime.start_season.year}"
+        myReturnText = myReturnText + f"\n**Rating:** {anime.rating.human_rating} - {anime.rating.rating_desc}\n\n"
+        if anime.start_season is not None:
+            myReturnText = myReturnText + f"**Season: **{anime.start_season.season.capitalize()} {anime.start_season.year}"
         if anime.media_type != "":
-            embed.add_field(name=f"{anime.media_type.capitalize()}: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}",inline=True)
+            embed.add_field(name=f"{anime.media_type.capitalize()}: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}")
         else:
-            embed.add_field(name=f"Entry: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}",inline=True)
+            embed.add_field(name=f"Entry: {anime.title}",value=f"ID: {anime.id}\n{myReturnText}")
         return anime, embed
 
     @discord.app_commands.command(name="search")
