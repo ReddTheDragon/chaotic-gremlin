@@ -21,8 +21,16 @@ class NetworkError(Exception):
     def __init__(self, message, objec: object=None):
         self.message = message
         if isinstance(objec,pycurl.Curl):
+            logging.warning("Closed pycurl object")
             objec.close()
         super().__init__(self.message)
+
+class BadRequestException(Exception):
+    def __init__(self, message, object: object=None):
+        self.message = message
+        if isinstance(objec,pycurl.Curl):
+            logging.warning("Closed pycurl object")
+            objec.close()
 
 
 class Client(object):
@@ -56,12 +64,150 @@ class Client(object):
         c.setopt(c.WRITEDATA, buffer)
         c.perform()
         if c.getinfo(c.RESPONSE_CODE) != 200:
-            logging.warning("Retrieving url failed")
-            raise NetworkError("Retrieving the url failed with error code " + str(c.getinfo(c.RESPONSE_CODE)),c)
+            if c.getinfo(c.RESPONSE_CODE) == 400:
+                logging.warning("Retrieving url failed, bad request")
+                raise BadRequestException("Bad Request",c)
+            else:
+                logging.warning("Retrieving url failed")
+                raise NetworkError("Retrieving the url failed with error code " + str(c.getinfo(c.RESPONSE_CODE)),c)
         c.close()
         body = buffer.getvalue()
         body = body.decode("utf-8")
         return body
+
+    def get_anime(self,query,fields = None):
+        myquery = quote(query)
+        mydata = ""
+        if fields is None:
+            myData = self.__access_endpoint(self.__animeEndpoint(query))
+        else:
+            fields = quote(fields)
+            myData = self.__access_endpoint(self.__animeEndpoint(query),"fields={fields}")
+        c = None
+        mid = ""
+        mtitle = ""
+        startdate = ""
+        enddate = ""
+        synop = ""
+        meanscore = ""
+        mrank = ""
+        mpopularity = ""
+        mnum_list_users = ""
+        mnum_scoring_users = ""
+        mnsfw = None
+        mcreated_at = ""
+        mupdated_at = ""
+        mmedia = ""
+        mstatus = None
+        meps = ""
+        mstart = None
+        mbrod = None
+        msource = ""
+        mavgduration = ""
+        mrating = ""
+        mstudios = ""
+        myGenres = None
+        mid = mydata["id"]
+        mtitle = mydata["title"]
+        try:
+            mpic = mydata["main_picture"]["medium"]
+        except KeyError:
+            pass
+        # get the keys for the alt titles
+        try:
+            c = AnimeAltTitles(mydata["alternative_titles"])
+        except KeyError:
+            pass
+        try:
+            startdate = mydata["start_date"]
+        except KeyError:
+            pass
+        try:
+            enddate = mydata["end_date"]
+        except KeyError:
+            pass
+        try:
+            synop = mydata["synopsis"]
+        except KeyError:
+            pass
+        try:
+            meanscore = mydata["mean"]
+        except KeyError:
+            pass
+        try:
+            mrank = mydata["rank"]
+        except KeyError:
+            pass
+        try:
+            mpopularity = mydata["popularity"]
+        except KeyError:
+            pass
+        try:
+            mnum_list_users = mydata["num_list_users"]
+        except KeyError:
+            pass
+        try:
+            mnum_scoring_users = mydata["num_scoring_users"]
+        except KeyError:
+            pass
+        try:
+            mnsfw = AnimeNsfw(mydata["nsfw"])
+        except KeyError:
+            pass
+        myGenres = AnimeGenres()
+        try:
+            for ow in mydata["genres"]:
+                print(ow)
+                mytempgenre = AnimeGenre(ow["id"],ow["name"])
+                myGenres.add(mytempgenre)
+        except KeyError:
+            pass
+        try:
+            mcreated_at = mydata["created_at"]
+        except KeyError:
+            pass
+        try:
+            mupdated_at = mydata["updated_at"]
+        except KeyError:
+            pass
+        try:
+            mmedia = mydata["media_type"]
+        except KeyError:
+            pass
+        try:
+            mstatus = AnimeStatus(mydata["status"])
+        except KeyError:
+            pass
+        try:
+            meps = mydata["num_episodes"]
+        except KeyError:
+            pass
+        try:
+            mstart = AnimeSeason(mydata["start_season"]["year"],mydata["start_season"]["season"])
+        except KeyError:
+            pass
+        try:
+            mbrod = AnimeBroadcast(mydata["broadcast"]["day_of_the_week"], mydata["broadcast"]["start_time"])
+        except KeyError:
+            pass
+        try:
+            msource = mydata["source"]
+        except KeyError:
+            msource = ""
+            pass
+        try:
+            mavgduration = round(float(mydata["average_episode_duration"] / 60),2)
+        except KeyError:
+            pass
+        try:
+            mrating = AnimeRating(mydata["rating"])
+        except KeyError:
+            pass
+        try:
+            mstudios = mydata["studios"]
+        except KeyError:
+            pass
+        return AnimeFields(mid,mtitle,mpic,c,startdate,enddate,synop,meanscore,mrank,mpopularity,mnum_list_users,mnum_scoring_users,mnsfw,myGenres,mcreated_at,mupdated_at,mmedia,mstatus,meps,mstart,mbrod,msource,mavgduration,mrating,mstudios)
 
     # searches for an anime
     def searchAnime(self,query,limit=10,fields=None):
