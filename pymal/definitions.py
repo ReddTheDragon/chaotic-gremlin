@@ -18,19 +18,38 @@
 class AnimeStatus(object):
     def __init__(self, stat):
         self.status = stat
-        if self.stat == "finished_airing":
+        if self.status == "finished_airing":
             self.readable_status = "finished airing"
             self.status_id = 0
-        elif self.stat == "currently_airing":
+        elif self.status == "currently_airing":
             self.readable_status = "currently airing"
             self.status_id = 1
-        elif self.stat == "not_yet_aired":
+        elif self.status == "not_yet_aired":
             self.readable_status = "not yet aired"
             self.status_id = 2
         else:
             self.readable_status = "unknown"
             self.status_id = 3
 
+class AnimeStudio(object):
+    def __init__(self,id,name):
+        self.id = id
+        self.name = name
+
+class AnimeStudios(object):
+    def __init__(self):
+        self.studios = []
+
+    def add(self,studio: AnimeStudio):
+        self.studios.append(studio)
+
+    def delstudio(self, name: str):
+        i = 0
+        for z in self.studios:
+            if z.name == name:
+                self.studios.pop(i)
+                break
+            i = i + 1
 
 class AnimeSeason(object):
     def __init__(self, year: int = 0, season: str = "not set"):
@@ -131,7 +150,7 @@ class AnimeGenres(object):
         self.genres = []
 
     def add(self,genre: AnimeGenre):
-        self.genres.append(AnimeGenre)
+        self.genres.append(genre)
 
     def delgenre(self, name: str):
         i = 0
