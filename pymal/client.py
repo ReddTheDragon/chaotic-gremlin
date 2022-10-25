@@ -97,7 +97,6 @@ class Client(object):
         else:
             myPagination.updatePagination(previousURL = "")
         # key processing
-        print(myData["data"])
         for key in myData["data"]:
             for i in key:
                 c = None
@@ -212,7 +211,6 @@ class Client(object):
                     pass
                 try:
                     for b in key[i]["authors"]:
-                        print(b)
                         myAuthors.add(MangaAuthor(b["id"],b["node"]["first_name"],b["node"]["last_name"],b["role"]))
                 except KeyError:
 

@@ -100,7 +100,7 @@ class Anime(commands.Cog):
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Manga Query",description="**ID: " + str(id) + "**")
         mymanga = ""
-        mymanga = self.client.get_manga(id,fields="alternative_titles,nsfw,rating,media_type,start_date,end_date,status,synopsis,mean,num_list_users,num_scoring_users,genres,num_chapters,num_volumes,authors,genres,")
+        mymanga = self.client.get_manga(id,fields="alternative_titles,nsfw,media_type,start_date,end_date,status,synopsis,mean,num_list_users,num_scoring_users,genres,num_chapters,num_volumes,authors,genres,mean")
         if mymanga == 404:
             await mymsg.edit(content="Your manga couldn't be found 😭")
             return
@@ -118,6 +118,8 @@ class Anime(commands.Cog):
                 em.color=discord.Color.red()
                 await mymsg.edit(content="Error retrieving manga...",embed=em)
                 return
+        if mymanga.mean == "" or mymanga.mean is None:
+            mymanga.set_mean("n/a")
         em.description = em.description + f"\n**Name:** {mymanga.title}\n**Media Type:** {mymanga.media_type}\n**Mean Rating:** {mymanga.mean}\n"
         if mymanga.num_chapters != -1 and mymanga.num_volumes != -1:
             em.description = em.description + f"\n**{mymanga.num_chapters} chapter(s), {mymanga.num_volumes} volume(s)**\n"
@@ -263,7 +265,7 @@ class Anime(commands.Cog):
         mymsg = await ctx.original_response()
         em = discord.Embed(color=ctx.user.accent_color,title="Manga Search",description="**Query: " + name + "**")
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
-        pageData, myMangas = self.client.searchManga(name,20,fields="alternative_titles,media_type,start_date,authors,end_date,status,nsfw")
+        pageData, myMangas = self.client.searchManga(name,20,fields="alternative_titles,media_type,start_date,authors,end_date,status,nsfw,mean")
         print(myMangas)
         if myMangas == 400:
             logging.warning(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) tried to search {name}, generating a bad request.")
