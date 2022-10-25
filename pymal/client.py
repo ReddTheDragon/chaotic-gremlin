@@ -688,6 +688,8 @@ class Client(object):
             fields = quote(fields)
             print(limit)
             myData = self.__access_endpoint(self.endpoints["manga"],f"q={myquery}&limit={limit}&fields={fields}")
+        if isinstance(myData,int):
+            return '', myData
         dataReturned = json.loads(myData)
         myPagination, myManga = self.doMangaKeyProcessing(dataReturned)
         return myPagination, myManga

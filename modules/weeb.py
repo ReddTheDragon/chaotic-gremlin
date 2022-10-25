@@ -148,7 +148,6 @@ class Anime(commands.Cog):
         if mymanga.alternative_titles.ja != '':
             em.add_field(name=f"Japanese Name",value=f"{mymanga.alternative_titles.ja}",inline=False)
         if mymanga.authors is not None:
-            print(mymanga.authors)
             studiosData = ""
             for i in mymanga.authors.authors:
                 print(i)
@@ -169,7 +168,6 @@ class Anime(commands.Cog):
                 em.add_field(name="Synopsis",value=f"||{mymanga.synopsis[0:950]}... View the rest on MAL.||",inline=False)
             else:
                 em.add_field(name="Synopsis",value=f"||{mymanga.synopsis}||",inline=False)
-        print(em.fields)
         logging.info(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) manga-grabbed {mymanga.id} ({mymanga.title}) in guild {ctx.guild_id}")
         await mymsg.edit(content="I found your manga!",embed=em)
 
@@ -266,7 +264,6 @@ class Anime(commands.Cog):
         em = discord.Embed(color=ctx.user.accent_color,title="Manga Search",description="**Query: " + name + "**")
         em.set_author(name="Requested by: " + str(ctx.user.name + "#" + ctx.user.discriminator),icon_url=ctx.user.avatar.url)
         pageData, myMangas = self.client.searchManga(name,20,fields="alternative_titles,media_type,start_date,authors,end_date,status,nsfw,mean")
-        print(myMangas)
         if myMangas == 400:
             logging.warning(f"User {ctx.user.name}#{ctx.user.discriminator} (<@{ctx.user.id}>) tried to search {name}, generating a bad request.")
             await mymsg.edit(content="Bad Request, please try a longer search string")

@@ -53,7 +53,7 @@ except Exception:
 # is this a development version?
 IS_DEVELOPMENT_VERSION = 0
 # declare the version
-VERS = "0.51 beta"
+VERS = "0.91 beta"
 # ##END VARIABLE DECLARATIONS## #
 
 # setup logging
