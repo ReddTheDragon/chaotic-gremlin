@@ -136,7 +136,7 @@ class imageModule(commands.Cog):
         if doexit is True:
             return False
         logging.info("User {0}#{1} (<@{2}>) swirled image in guild {3}".format(ctx.user.name,ctx.user.discriminator,ctx.user.id,ctx.guild.id))
-        await ctx.response.send_message("I did it! Swirled image by factor of {0}".format(factor),file=myDiscordFile)
+        await ctx.response.send_message(content="I did it! Swirled image by factor of {0}".format(factor),file=myDiscordFile)
 
     @discord.app_commands.command(name="deepfry")
     async def deepfryimage(self,ctx,type:int = 1):
@@ -153,9 +153,10 @@ class imageModule(commands.Cog):
             try:
                 if not myfiname[len(myfiname) - 1] in acceptableFiles:
                     await ctx.response.send_message("**Error! Not a valid image.**")
+                    return False
             except:
                 await ctx.response.send_message("**Error! Not a valid image.**")
-                doexit = True
+                return False
             try:
                 url = myLastMessage.attachments[0].url
             except:

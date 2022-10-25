@@ -127,6 +127,7 @@ async def test(ctx):
 
 
 @bot.command(name="forcetree")
+@commands.check(owner.isowner)
 async def forcetree(ctx):
     await bot.tree.sync()
     print("B")
@@ -148,7 +149,14 @@ async def coglist(ctx):
     for k in bot.cogs:
         em.add_field(name="Cog", value=str(k))
     await do_embed(ctx, em)
-
+        
+@bot.command(name="shutdown")
+@commands.check(owner.isowner)
+async def sdown(ctx):
+    em = discord.Embed(title="Goodbye!")
+    em.set_footer(text=bot.user.name + " version " + str(VERS))
+    await ctx.send(embed=em)
+    await bot.close()
 
 @bot.command(name="loadcog")
 @commands.check(owner.isowner)
