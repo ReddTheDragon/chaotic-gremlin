@@ -16,3 +16,4 @@
 *.pyc
 lint.sh
 lint.txt
+autoreboot.sh
